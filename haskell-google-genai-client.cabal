@@ -1,24 +1,34 @@
 cabal-version:      3.0
 name:               haskell-google-genai-client
-version:            0.1.0.0
+version:            0.1.0
 synopsis:           Auto-generated Gemini API Client for Haskell
 description:
   Unofficial Haskell client for Google GenAI API, including Gemini.
-  .
+
   This library is auto-generated from the OpenAPI specification, using <https://openapi-generator.tech/ openapi-generator>.
-  .
+
   Google API reference: <https://ai.google.dev/api>
 
-category:           Web
-homepage:           https://github.com/sonowz/haskell-google-genai-client
+category:           API
+homepage:
+  https://github.com/sonowz/haskell-google-genai-client#readme
+
+bug-reports:
+  https://github.com/sonowz/haskell-google-genai-client/issues
+
 author:             SoonHo Seo
 maintainer:         dnsdhrj123@gmail.com
-copyright:          MIT
+copyright:          2025 Sonowz
 license:            MIT
+license-file:       LICENSE
 build-type:         Simple
 extra-source-files:
   openapi.yaml
   README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/sonowz/haskell-google-genai-client
 
 flag UseKatip
   description:
@@ -31,32 +41,33 @@ library
   hs-source-dirs:   lib
   ghc-options:      -Wall -funbox-strict-fields
   build-depends:
-    , aeson                 >=2.0     && <3.0
-    , base                  >=4.16    && <5.0
-    , base64-bytestring     >=1.0.0   && <2.0
-    , bytestring            >=0.11.0
-    , case-insensitive      >=1.2
+    , aeson                 >=2.0     && <3
+    , base                  >=4.16    && <5
+    , base64-bytestring     >=1.0.0   && <2
+    , bytestring            >=0.11.0  && <1
+    , case-insensitive      >=1.2     && <2
     , containers            >=0.6     && <0.8
     , deepseq               >=1.4     && <1.6
-    , exceptions            >=0.10
+    , exceptions            >=0.10    && <1
     , http-api-data         >=0.4     && <0.7
     , http-client           >=0.7     && <0.8
-    , http-client-tls       >=0.3
+    , http-client-tls       >=0.3     && <1
     , http-media            >=0.8     && <0.9
     , http-types            >=0.12    && <0.13
-    , iso8601-time          >=0.1.3   && <0.2.0
-    , microlens             >=0.4.3
-    , mtl                   >=2.2.1
+    , iso8601-time          >=0.1.3   && <0.2
+    , microlens             >=0.4.3   && <1
+    , mtl                   >=2.2.1   && <3
     , network               >=3.0     && <3.9
-    , random                >=1.1
-    , safe-exceptions       <0.2
+    , random                >=1.1     && <2
+    , safe-exceptions       >=0.1     && <0.2
     , text                  >=1.2     && <3
-    , time                  >=1.5
-    , transformers          >=0.5.0.0
-    , unordered-containers  >=0.2
+    , time                  >=1.5     && <2
+    , transformers          >=0.5.0.0 && <1
+    , unordered-containers  >=0.2     && <1
     , vector                >=0.12    && <0.14
 
   other-modules:    Paths_haskell_google_genai_client
+  autogen-modules:  Paths_haskell_google_genai_client
   exposed-modules:
     GenAI.Client
     GenAI.Client.API
@@ -87,18 +98,18 @@ test-suite tests
   ghc-options:      -Wall -fno-warn-orphans
   build-depends:
     , aeson
-    , base                         >=4.16    && <5.0
-    , bytestring                   >=0.11.0
+    , base
+    , bytestring
     , containers
     , haskell-google-genai-client
-    , hspec                        >=1.8
+    , hspec
     , iso8601-time
-    , mtl                          >=2.2.1
+    , mtl
     , QuickCheck
     , semigroups
     , text
     , time
-    , transformers                 >=0.5.0.0
+    , transformers
     , unordered-containers
     , vector
 
