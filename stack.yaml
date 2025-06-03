@@ -1,0 +1,4 @@
+# GHC version: 9.6.6
+resolver: lts-22.43
+packages:
+  - .
