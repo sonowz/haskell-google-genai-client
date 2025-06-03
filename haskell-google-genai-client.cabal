@@ -2,25 +2,13 @@ name:               haskell-google-genai-client
 version:            0.1.0.0
 synopsis:           Auto-generated haskell-google-genai-client API Client
 description:
-  .
-  Client library for calling the Generative Language API API based on http-client.
-  .
-  host: generativelanguage.googleapis.com
-  .
-  base path: https://generativelanguage.googleapis.com
-  .
-  Generative Language API API version: v1beta
-  .
-  OpenAPI version: 3.0.3
-  .
-  Generator version: 7.9.0
-  .
+  Unofficial Haskell client for Google GenAI API, including Gemini.
 
 category:           Web
-homepage:           https://openapi-generator.tech
-author:             Author Name Here
-maintainer:         author.name@email.com
-copyright:          YEAR - AUTHOR
+homepage:           https://github.com/sonowz/haskell-google-genai-client
+author:             SoonHo Seo
+maintainer:         dnsdhrj123@gmail.com
+copyright:          MIT
 license:            MIT
 build-type:         Simple
 cabal-version:      >=1.10
@@ -76,7 +64,7 @@ library
     GenAI.Client.Model
     GenAI.Client.ModelLens
 
-  default-language: Haskell2010
+  default-language: GHC2021
 
   if flag(usekatip)
     build-depends: katip >=0.8 && <1.0
@@ -115,4 +103,4 @@ test-suite tests
     Instances
     PropMime
 
-  default-language: Haskell2010
+  default-language: GHC2021
