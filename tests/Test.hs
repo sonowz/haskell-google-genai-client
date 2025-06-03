@@ -1,19 +1,19 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Main where
 
-import Data.Typeable (Proxy(..))
+import Data.Typeable (Proxy (..))
 import Test.Hspec
 import Test.Hspec.QuickCheck
 
-import PropMime
 import Instances ()
+import PropMime
 
-import GenAI.Client.Model
 import GenAI.Client.MimeTypes
+import GenAI.Client.Model
 
 main :: IO ()
 main =
@@ -170,4 +170,3 @@ main =
       propMimeEq MimeJSON (Proxy :: Proxy VideoMetadata)
       propMimeEq MimeJSON (Proxy :: Proxy VoiceConfig)
       propMimeEq MimeJSON (Proxy :: Proxy Web)
-      

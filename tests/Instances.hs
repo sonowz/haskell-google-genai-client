@@ -3,17 +3,17 @@
 
 module Instances where
 
-import GenAI.Client.Model
 import GenAI.Client.Core
+import GenAI.Client.Model
 
-import qualified Data.Aeson as A
-import qualified Data.ByteString.Lazy as BL
-import qualified Data.HashMap.Strict as HM
-import qualified Data.Set as Set
-import qualified Data.Text as T
-import qualified Data.Time as TI
-import qualified Data.Vector as V
+import Data.Aeson qualified as A
+import Data.ByteString.Lazy qualified as BL
+import Data.HashMap.Strict qualified as HM
+import Data.Set qualified as Set
 import Data.String (fromString)
+import Data.Text qualified as T
+import Data.Time qualified as TI
+import Data.Vector qualified as V
 
 import Control.Monad
 import Data.Char (isSpace)
@@ -34,24 +34,24 @@ instance Arbitrary TI.UTCTime where
     TI.UTCTime <$> arbitrary <*> (TI.secondsToDiffTime <$> choose (0, 86401))
 
 instance Arbitrary BL.ByteString where
-    arbitrary = BL.pack <$> arbitrary
-    shrink xs = BL.pack <$> shrink (BL.unpack xs)
+  arbitrary = BL.pack <$> arbitrary
+  shrink xs = BL.pack <$> shrink (BL.unpack xs)
 
 instance Arbitrary ByteArray where
-    arbitrary = ByteArray <$> arbitrary
-    shrink (ByteArray xs) = ByteArray <$> shrink xs
+  arbitrary = ByteArray <$> arbitrary
+  shrink (ByteArray xs) = ByteArray <$> shrink xs
 
 instance Arbitrary Binary where
-    arbitrary = Binary <$> arbitrary
-    shrink (Binary xs) = Binary <$> shrink xs
+  arbitrary = Binary <$> arbitrary
+  shrink (Binary xs) = Binary <$> shrink xs
 
 instance Arbitrary DateTime where
-    arbitrary = DateTime <$> arbitrary
-    shrink (DateTime xs) = DateTime <$> shrink xs
+  arbitrary = DateTime <$> arbitrary
+  shrink (DateTime xs) = DateTime <$> shrink xs
 
 instance Arbitrary Date where
-    arbitrary = Date <$> arbitrary
-    shrink (Date xs) = Date <$> shrink xs
+  arbitrary = Date <$> arbitrary
+  shrink (Date xs) = Date <$> shrink xs
 
 #if MIN_VERSION_aeson(2,0,0)
 #else
@@ -63,43 +63,46 @@ instance Arbitrary A.Value where
 arbitraryValue :: Gen A.Value
 arbitraryValue =
   frequency [(3, simpleTypes), (1, arrayTypes), (1, objectTypes)]
-    where
-      simpleTypes :: Gen A.Value
-      simpleTypes =
-        frequency
-          [ (1, return A.Null)
-          , (2, liftM A.Bool (arbitrary :: Gen Bool))
-          , (2, liftM (A.Number . fromIntegral) (arbitrary :: Gen Int))
-          , (2, liftM (A.String . T.pack) (arbitrary :: Gen String))
-          ]
-      mapF (k, v) = (fromString k, v)
-      simpleAndArrays = frequency [(1, sized sizedArray), (4, simpleTypes)]
-      arrayTypes = sized sizedArray
-      objectTypes = sized sizedObject
-      sizedArray n = liftM (A.Array . V.fromList) $ replicateM n simpleTypes
-      sizedObject n =
-        liftM (A.object . map mapF) $
-        replicateM n $ (,) <$> (arbitrary :: Gen String) <*> simpleAndArrays
+  where
+    simpleTypes :: Gen A.Value
+    simpleTypes =
+      frequency
+        [ (1, return A.Null)
+        , (2, liftM A.Bool (arbitrary :: Gen Bool))
+        , (2, liftM (A.Number . fromIntegral) (arbitrary :: Gen Int))
+        , (2, liftM (A.String . T.pack) (arbitrary :: Gen String))
+        ]
+    mapF (k, v) = (fromString k, v)
+    simpleAndArrays = frequency [(1, sized sizedArray), (4, simpleTypes)]
+    arrayTypes = sized sizedArray
+    objectTypes = sized sizedObject
+    sizedArray n = liftM (A.Array . V.fromList) $ replicateM n simpleTypes
+    sizedObject n =
+      liftM (A.object . map mapF) $
+        replicateM n $
+          (,) <$> (arbitrary :: Gen String) <*> simpleAndArrays
 
 -- | Checks if a given list has no duplicates in _O(n log n)_.
-hasNoDups
-  :: (Ord a)
-  => [a] -> Bool
+hasNoDups ::
+  (Ord a) =>
+  [a] ->
+  Bool
 hasNoDups = go Set.empty
   where
     go _ [] = True
-    go s (x:xs)
+    go s (x : xs)
       | s' <- Set.insert x s
-      , Set.size s' > Set.size s = go s' xs
+      , Set.size s' > Set.size s =
+          go s' xs
       | otherwise = False
 
 instance ApproxEq TI.Day where
   (=~) = (==)
 
-arbitraryReduced :: Arbitrary a => Int -> Gen a
+arbitraryReduced :: (Arbitrary a) => Int -> Gen a
 arbitraryReduced n = resize (n `div` 2) arbitrary
 
-arbitraryReducedMaybe :: Arbitrary a => Int -> Gen (Maybe a)
+arbitraryReducedMaybe :: (Arbitrary a) => Int -> Gen (Maybe a)
 arbitraryReducedMaybe 0 = elements [Nothing]
 arbitraryReducedMaybe n = arbitraryReduced n
 
@@ -121,7 +124,7 @@ genAttributionSourceId n =
   AttributionSourceId
     <$> arbitraryReducedMaybe n -- attributionSourceIdGroundingPassage :: Maybe GroundingPassageId
     <*> arbitraryReducedMaybe n -- attributionSourceIdSemanticRetrieverChunk :: Maybe SemanticRetrieverChunk
-  
+
 instance Arbitrary BaseOperation where
   arbitrary = sized genBaseOperation
 
@@ -131,7 +134,7 @@ genBaseOperation n =
     <$> arbitraryReducedMaybe n -- baseOperationDone :: Maybe Bool
     <*> arbitraryReducedMaybe n -- baseOperationName :: Maybe Text
     <*> arbitraryReducedMaybe n -- baseOperationError :: Maybe Status
-  
+
 instance Arbitrary BatchCreateChunksRequest where
   arbitrary = sized genBatchCreateChunksRequest
 
@@ -139,7 +142,7 @@ genBatchCreateChunksRequest :: Int -> Gen BatchCreateChunksRequest
 genBatchCreateChunksRequest n =
   BatchCreateChunksRequest
     <$> arbitraryReduced n -- batchCreateChunksRequestRequests :: [CreateChunkRequest]
-  
+
 instance Arbitrary BatchCreateChunksResponse where
   arbitrary = sized genBatchCreateChunksResponse
 
@@ -147,7 +150,7 @@ genBatchCreateChunksResponse :: Int -> Gen BatchCreateChunksResponse
 genBatchCreateChunksResponse n =
   BatchCreateChunksResponse
     <$> arbitraryReducedMaybe n -- batchCreateChunksResponseChunks :: Maybe [Chunk]
-  
+
 instance Arbitrary BatchDeleteChunksRequest where
   arbitrary = sized genBatchDeleteChunksRequest
 
@@ -155,7 +158,7 @@ genBatchDeleteChunksRequest :: Int -> Gen BatchDeleteChunksRequest
 genBatchDeleteChunksRequest n =
   BatchDeleteChunksRequest
     <$> arbitraryReduced n -- batchDeleteChunksRequestRequests :: [DeleteChunkRequest]
-  
+
 instance Arbitrary BatchEmbedContentsRequest where
   arbitrary = sized genBatchEmbedContentsRequest
 
@@ -163,7 +166,7 @@ genBatchEmbedContentsRequest :: Int -> Gen BatchEmbedContentsRequest
 genBatchEmbedContentsRequest n =
   BatchEmbedContentsRequest
     <$> arbitraryReduced n -- batchEmbedContentsRequestRequests :: [EmbedContentRequest]
-  
+
 instance Arbitrary BatchEmbedContentsResponse where
   arbitrary = sized genBatchEmbedContentsResponse
 
@@ -171,7 +174,7 @@ genBatchEmbedContentsResponse :: Int -> Gen BatchEmbedContentsResponse
 genBatchEmbedContentsResponse n =
   BatchEmbedContentsResponse
     <$> arbitraryReducedMaybe n -- batchEmbedContentsResponseEmbeddings :: Maybe [ContentEmbedding]
-  
+
 instance Arbitrary BatchEmbedTextRequest where
   arbitrary = sized genBatchEmbedTextRequest
 
@@ -180,7 +183,7 @@ genBatchEmbedTextRequest n =
   BatchEmbedTextRequest
     <$> arbitraryReducedMaybe n -- batchEmbedTextRequestRequests :: Maybe [EmbedTextRequest]
     <*> arbitraryReducedMaybe n -- batchEmbedTextRequestTexts :: Maybe [Text]
-  
+
 instance Arbitrary BatchEmbedTextResponse where
   arbitrary = sized genBatchEmbedTextResponse
 
@@ -188,7 +191,7 @@ genBatchEmbedTextResponse :: Int -> Gen BatchEmbedTextResponse
 genBatchEmbedTextResponse n =
   BatchEmbedTextResponse
     <$> arbitraryReducedMaybe n -- batchEmbedTextResponseEmbeddings :: Maybe [Embedding]
-  
+
 instance Arbitrary BatchUpdateChunksRequest where
   arbitrary = sized genBatchUpdateChunksRequest
 
@@ -196,7 +199,7 @@ genBatchUpdateChunksRequest :: Int -> Gen BatchUpdateChunksRequest
 genBatchUpdateChunksRequest n =
   BatchUpdateChunksRequest
     <$> arbitraryReduced n -- batchUpdateChunksRequestRequests :: [UpdateChunkRequest]
-  
+
 instance Arbitrary BatchUpdateChunksResponse where
   arbitrary = sized genBatchUpdateChunksResponse
 
@@ -204,7 +207,7 @@ genBatchUpdateChunksResponse :: Int -> Gen BatchUpdateChunksResponse
 genBatchUpdateChunksResponse n =
   BatchUpdateChunksResponse
     <$> arbitraryReducedMaybe n -- batchUpdateChunksResponseChunks :: Maybe [Chunk]
-  
+
 instance Arbitrary Blob where
   arbitrary = sized genBlob
 
@@ -213,7 +216,7 @@ genBlob n =
   Blob
     <$> arbitraryReducedMaybe n -- blobData :: Maybe ByteArray
     <*> arbitraryReducedMaybe n -- blobMimeType :: Maybe Text
-  
+
 instance Arbitrary CachedContent where
   arbitrary = sized genCachedContent
 
@@ -232,7 +235,7 @@ genCachedContent n =
     <*> arbitraryReducedMaybe n -- cachedContentCreateTime :: Maybe DateTime
     <*> arbitraryReducedMaybe n -- cachedContentTtl :: Maybe Text
     <*> arbitraryReducedMaybe n -- cachedContentUpdateTime :: Maybe DateTime
-  
+
 instance Arbitrary CachedContentUsageMetadata where
   arbitrary = sized genCachedContentUsageMetadata
 
@@ -240,7 +243,7 @@ genCachedContentUsageMetadata :: Int -> Gen CachedContentUsageMetadata
 genCachedContentUsageMetadata n =
   CachedContentUsageMetadata
     <$> arbitraryReducedMaybe n -- cachedContentUsageMetadataTotalTokenCount :: Maybe Int
-  
+
 instance Arbitrary Candidate where
   arbitrary = sized genCandidate
 
@@ -258,7 +261,7 @@ genCandidate n =
     <*> arbitraryReducedMaybe n -- candidateFinishReason :: Maybe E'FinishReason
     <*> arbitraryReducedMaybe n -- candidateSafetyRatings :: Maybe [SafetyRating]
     <*> arbitraryReducedMaybe n -- candidateTokenCount :: Maybe Int
-  
+
 instance Arbitrary Chunk where
   arbitrary = sized genChunk
 
@@ -271,7 +274,7 @@ genChunk n =
     <*> arbitraryReducedMaybe n -- chunkUpdateTime :: Maybe DateTime
     <*> arbitraryReducedMaybe n -- chunkState :: Maybe E'State4
     <*> arbitraryReducedMaybe n -- chunkName :: Maybe Text
-  
+
 instance Arbitrary ChunkData where
   arbitrary = sized genChunkData
 
@@ -279,7 +282,7 @@ genChunkData :: Int -> Gen ChunkData
 genChunkData n =
   ChunkData
     <$> arbitraryReducedMaybe n -- chunkDataStringValue :: Maybe Text
-  
+
 instance Arbitrary CitationMetadata where
   arbitrary = sized genCitationMetadata
 
@@ -287,7 +290,7 @@ genCitationMetadata :: Int -> Gen CitationMetadata
 genCitationMetadata n =
   CitationMetadata
     <$> arbitraryReducedMaybe n -- citationMetadataCitationSources :: Maybe [CitationSource]
-  
+
 instance Arbitrary CitationSource where
   arbitrary = sized genCitationSource
 
@@ -298,7 +301,7 @@ genCitationSource n =
     <*> arbitraryReducedMaybe n -- citationSourceUri :: Maybe Text
     <*> arbitraryReducedMaybe n -- citationSourceEndIndex :: Maybe Int
     <*> arbitraryReducedMaybe n -- citationSourceLicense :: Maybe Text
-  
+
 instance Arbitrary CodeExecutionResult where
   arbitrary = sized genCodeExecutionResult
 
@@ -307,7 +310,7 @@ genCodeExecutionResult n =
   CodeExecutionResult
     <$> arbitrary -- codeExecutionResultOutcome :: E'Outcome
     <*> arbitraryReducedMaybe n -- codeExecutionResultOutput :: Maybe Text
-  
+
 instance Arbitrary Condition where
   arbitrary = sized genCondition
 
@@ -317,7 +320,7 @@ genCondition n =
     <$> arbitraryReducedMaybe n -- conditionNumericValue :: Maybe Float
     <*> arbitrary -- conditionOperation :: E'Operation
     <*> arbitraryReducedMaybe n -- conditionStringValue :: Maybe Text
-  
+
 instance Arbitrary Content where
   arbitrary = sized genContent
 
@@ -326,7 +329,7 @@ genContent n =
   Content
     <$> arbitraryReducedMaybe n -- contentParts :: Maybe [Part]
     <*> arbitraryReducedMaybe n -- contentRole :: Maybe Text
-  
+
 instance Arbitrary ContentEmbedding where
   arbitrary = sized genContentEmbedding
 
@@ -334,7 +337,7 @@ genContentEmbedding :: Int -> Gen ContentEmbedding
 genContentEmbedding n =
   ContentEmbedding
     <$> arbitraryReducedMaybe n -- contentEmbeddingValues :: Maybe [Float]
-  
+
 instance Arbitrary ContentFilter where
   arbitrary = sized genContentFilter
 
@@ -343,7 +346,7 @@ genContentFilter n =
   ContentFilter
     <$> arbitraryReducedMaybe n -- contentFilterReason :: Maybe E'Reason
     <*> arbitraryReducedMaybe n -- contentFilterMessage :: Maybe Text
-  
+
 instance Arbitrary Corpus where
   arbitrary = sized genCorpus
 
@@ -354,7 +357,7 @@ genCorpus n =
     <*> arbitraryReducedMaybe n -- corpusCreateTime :: Maybe DateTime
     <*> arbitraryReducedMaybe n -- corpusDisplayName :: Maybe Text
     <*> arbitraryReducedMaybe n -- corpusName :: Maybe Text
-  
+
 instance Arbitrary CountMessageTokensRequest where
   arbitrary = sized genCountMessageTokensRequest
 
@@ -362,7 +365,7 @@ genCountMessageTokensRequest :: Int -> Gen CountMessageTokensRequest
 genCountMessageTokensRequest n =
   CountMessageTokensRequest
     <$> arbitraryReduced n -- countMessageTokensRequestPrompt :: MessagePrompt
-  
+
 instance Arbitrary CountMessageTokensResponse where
   arbitrary = sized genCountMessageTokensResponse
 
@@ -370,7 +373,7 @@ genCountMessageTokensResponse :: Int -> Gen CountMessageTokensResponse
 genCountMessageTokensResponse n =
   CountMessageTokensResponse
     <$> arbitraryReducedMaybe n -- countMessageTokensResponseTokenCount :: Maybe Int
-  
+
 instance Arbitrary CountTextTokensRequest where
   arbitrary = sized genCountTextTokensRequest
 
@@ -378,7 +381,7 @@ genCountTextTokensRequest :: Int -> Gen CountTextTokensRequest
 genCountTextTokensRequest n =
   CountTextTokensRequest
     <$> arbitraryReduced n -- countTextTokensRequestPrompt :: TextPrompt
-  
+
 instance Arbitrary CountTextTokensResponse where
   arbitrary = sized genCountTextTokensResponse
 
@@ -386,7 +389,7 @@ genCountTextTokensResponse :: Int -> Gen CountTextTokensResponse
 genCountTextTokensResponse n =
   CountTextTokensResponse
     <$> arbitraryReducedMaybe n -- countTextTokensResponseTokenCount :: Maybe Int
-  
+
 instance Arbitrary CountTokensRequest where
   arbitrary = sized genCountTokensRequest
 
@@ -395,7 +398,7 @@ genCountTokensRequest n =
   CountTokensRequest
     <$> arbitraryReducedMaybe n -- countTokensRequestContents :: Maybe [Content]
     <*> arbitraryReducedMaybe n -- countTokensRequestGenerateContentRequest :: Maybe GenerateContentRequest
-  
+
 instance Arbitrary CountTokensResponse where
   arbitrary = sized genCountTokensResponse
 
@@ -406,7 +409,7 @@ genCountTokensResponse n =
     <*> arbitraryReducedMaybe n -- countTokensResponsePromptTokensDetails :: Maybe [ModalityTokenCount]
     <*> arbitraryReducedMaybe n -- countTokensResponseTotalTokens :: Maybe Int
     <*> arbitraryReducedMaybe n -- countTokensResponseCachedContentTokenCount :: Maybe Int
-  
+
 instance Arbitrary CreateChunkRequest where
   arbitrary = sized genCreateChunkRequest
 
@@ -415,7 +418,7 @@ genCreateChunkRequest n =
   CreateChunkRequest
     <$> arbitrary -- createChunkRequestParent :: Text
     <*> arbitraryReduced n -- createChunkRequestChunk :: Chunk
-  
+
 instance Arbitrary CreateFileRequest where
   arbitrary = sized genCreateFileRequest
 
@@ -423,7 +426,7 @@ genCreateFileRequest :: Int -> Gen CreateFileRequest
 genCreateFileRequest n =
   CreateFileRequest
     <$> arbitraryReducedMaybe n -- createFileRequestFile :: Maybe File
-  
+
 instance Arbitrary CreateFileResponse where
   arbitrary = sized genCreateFileResponse
 
@@ -431,7 +434,7 @@ genCreateFileResponse :: Int -> Gen CreateFileResponse
 genCreateFileResponse n =
   CreateFileResponse
     <$> arbitraryReducedMaybe n -- createFileResponseFile :: Maybe File
-  
+
 instance Arbitrary CreateTunedModelMetadata where
   arbitrary = sized genCreateTunedModelMetadata
 
@@ -443,7 +446,7 @@ genCreateTunedModelMetadata n =
     <*> arbitraryReducedMaybe n -- createTunedModelMetadataTotalSteps :: Maybe Int
     <*> arbitraryReducedMaybe n -- createTunedModelMetadataSnapshots :: Maybe [TuningSnapshot]
     <*> arbitraryReducedMaybe n -- createTunedModelMetadataTunedModel :: Maybe Text
-  
+
 instance Arbitrary CreateTunedModelOperation where
   arbitrary = sized genCreateTunedModelOperation
 
@@ -455,7 +458,7 @@ genCreateTunedModelOperation n =
     <*> arbitraryReducedMaybe n -- createTunedModelOperationError :: Maybe Status
     <*> arbitraryReducedMaybe n -- createTunedModelOperationMetadata :: Maybe CreateTunedModelMetadata
     <*> arbitraryReducedMaybe n -- createTunedModelOperationResponse :: Maybe TunedModel
-  
+
 instance Arbitrary CustomMetadata where
   arbitrary = sized genCustomMetadata
 
@@ -466,7 +469,7 @@ genCustomMetadata n =
     <*> arbitraryReducedMaybe n -- customMetadataStringValue :: Maybe Text
     <*> arbitrary -- customMetadataKey :: Text
     <*> arbitraryReducedMaybe n -- customMetadataNumericValue :: Maybe Float
-  
+
 instance Arbitrary Dataset where
   arbitrary = sized genDataset
 
@@ -474,7 +477,7 @@ genDataset :: Int -> Gen Dataset
 genDataset n =
   Dataset
     <$> arbitraryReducedMaybe n -- datasetExamples :: Maybe TuningExamples
-  
+
 instance Arbitrary DeleteChunkRequest where
   arbitrary = sized genDeleteChunkRequest
 
@@ -482,7 +485,7 @@ genDeleteChunkRequest :: Int -> Gen DeleteChunkRequest
 genDeleteChunkRequest n =
   DeleteChunkRequest
     <$> arbitrary -- deleteChunkRequestName :: Text
-  
+
 instance Arbitrary Document where
   arbitrary = sized genDocument
 
@@ -494,7 +497,7 @@ genDocument n =
     <*> arbitraryReducedMaybe n -- documentCustomMetadata :: Maybe [CustomMetadata]
     <*> arbitraryReducedMaybe n -- documentCreateTime :: Maybe DateTime
     <*> arbitraryReducedMaybe n -- documentDisplayName :: Maybe Text
-  
+
 instance Arbitrary DynamicRetrievalConfig where
   arbitrary = sized genDynamicRetrievalConfig
 
@@ -503,7 +506,7 @@ genDynamicRetrievalConfig n =
   DynamicRetrievalConfig
     <$> arbitraryReducedMaybe n -- dynamicRetrievalConfigDynamicThreshold :: Maybe Float
     <*> arbitraryReducedMaybe n -- dynamicRetrievalConfigMode :: Maybe E'Mode
-  
+
 instance Arbitrary EmbedContentRequest where
   arbitrary = sized genEmbedContentRequest
 
@@ -515,7 +518,7 @@ genEmbedContentRequest n =
     <*> arbitraryReducedMaybe n -- embedContentRequestOutputDimensionality :: Maybe Int
     <*> arbitrary -- embedContentRequestModel :: Text
     <*> arbitraryReducedMaybe n -- embedContentRequestTitle :: Maybe Text
-  
+
 instance Arbitrary EmbedContentResponse where
   arbitrary = sized genEmbedContentResponse
 
@@ -523,7 +526,7 @@ genEmbedContentResponse :: Int -> Gen EmbedContentResponse
 genEmbedContentResponse n =
   EmbedContentResponse
     <$> arbitraryReducedMaybe n -- embedContentResponseEmbedding :: Maybe ContentEmbedding
-  
+
 instance Arbitrary EmbedTextRequest where
   arbitrary = sized genEmbedTextRequest
 
@@ -532,7 +535,7 @@ genEmbedTextRequest n =
   EmbedTextRequest
     <$> arbitraryReducedMaybe n -- embedTextRequestText :: Maybe Text
     <*> arbitrary -- embedTextRequestModel :: Text
-  
+
 instance Arbitrary EmbedTextResponse where
   arbitrary = sized genEmbedTextResponse
 
@@ -540,7 +543,7 @@ genEmbedTextResponse :: Int -> Gen EmbedTextResponse
 genEmbedTextResponse n =
   EmbedTextResponse
     <$> arbitraryReducedMaybe n -- embedTextResponseEmbedding :: Maybe Embedding
-  
+
 instance Arbitrary Embedding where
   arbitrary = sized genEmbedding
 
@@ -548,7 +551,7 @@ genEmbedding :: Int -> Gen Embedding
 genEmbedding n =
   Embedding
     <$> arbitraryReducedMaybe n -- embeddingValue :: Maybe [Float]
-  
+
 instance Arbitrary Example where
   arbitrary = sized genExample
 
@@ -557,7 +560,7 @@ genExample n =
   Example
     <$> arbitraryReduced n -- exampleOutput :: Message
     <*> arbitraryReduced n -- exampleInput :: Message
-  
+
 instance Arbitrary ExecutableCode where
   arbitrary = sized genExecutableCode
 
@@ -566,7 +569,7 @@ genExecutableCode n =
   ExecutableCode
     <$> arbitrary -- executableCodeLanguage :: E'Language
     <*> arbitrary -- executableCodeCode :: Text
-  
+
 instance Arbitrary File where
   arbitrary = sized genFile
 
@@ -587,7 +590,7 @@ genFile n =
     <*> arbitraryReducedMaybe n -- fileSizeBytes :: Maybe Text
     <*> arbitraryReducedMaybe n -- fileSha256Hash :: Maybe ByteArray
     <*> arbitraryReducedMaybe n -- fileUpdateTime :: Maybe DateTime
-  
+
 instance Arbitrary FileData where
   arbitrary = sized genFileData
 
@@ -596,7 +599,7 @@ genFileData n =
   FileData
     <$> arbitraryReducedMaybe n -- fileDataMimeType :: Maybe Text
     <*> arbitrary -- fileDataFileUri :: Text
-  
+
 instance Arbitrary FunctionCall where
   arbitrary = sized genFunctionCall
 
@@ -606,7 +609,7 @@ genFunctionCall n =
     <$> arbitraryReducedMaybe n -- functionCallArgs :: Maybe (Map.Map String String)
     <*> arbitraryReducedMaybe n -- functionCallId :: Maybe Text
     <*> arbitrary -- functionCallName :: Text
-  
+
 instance Arbitrary FunctionCallingConfig where
   arbitrary = sized genFunctionCallingConfig
 
@@ -615,7 +618,7 @@ genFunctionCallingConfig n =
   FunctionCallingConfig
     <$> arbitraryReducedMaybe n -- functionCallingConfigMode :: Maybe E'Mode2
     <*> arbitraryReducedMaybe n -- functionCallingConfigAllowedFunctionNames :: Maybe [Text]
-  
+
 instance Arbitrary FunctionDeclaration where
   arbitrary = sized genFunctionDeclaration
 
@@ -629,7 +632,7 @@ genFunctionDeclaration n =
     <*> arbitraryReducedMaybe n -- functionDeclarationResponse :: Maybe Schema
     <*> arbitraryReducedMaybe n -- functionDeclarationResponseJsonSchema :: Maybe String
     <*> arbitraryReducedMaybe n -- functionDeclarationParametersJsonSchema :: Maybe String
-  
+
 instance Arbitrary FunctionResponse where
   arbitrary = sized genFunctionResponse
 
@@ -641,7 +644,7 @@ genFunctionResponse n =
     <*> arbitraryReducedMaybe n -- functionResponseWillContinue :: Maybe Bool
     <*> arbitrary -- functionResponseName :: Text
     <*> arbitrary -- functionResponseResponse :: (Map.Map String String)
-  
+
 instance Arbitrary GenerateAnswerRequest where
   arbitrary = sized genGenerateAnswerRequest
 
@@ -654,7 +657,7 @@ genGenerateAnswerRequest n =
     <*> arbitraryReduced n -- generateAnswerRequestContents :: [Content]
     <*> arbitraryReducedMaybe n -- generateAnswerRequestSafetySettings :: Maybe [SafetySetting]
     <*> arbitraryReducedMaybe n -- generateAnswerRequestInlinePassages :: Maybe GroundingPassages
-  
+
 instance Arbitrary GenerateAnswerResponse where
   arbitrary = sized genGenerateAnswerResponse
 
@@ -664,7 +667,7 @@ genGenerateAnswerResponse n =
     <$> arbitraryReducedMaybe n -- generateAnswerResponseAnswer :: Maybe Candidate
     <*> arbitraryReducedMaybe n -- generateAnswerResponseInputFeedback :: Maybe InputFeedback
     <*> arbitraryReducedMaybe n -- generateAnswerResponseAnswerableProbability :: Maybe Float
-  
+
 instance Arbitrary GenerateContentRequest where
   arbitrary = sized genGenerateContentRequest
 
@@ -679,7 +682,7 @@ genGenerateContentRequest n =
     <*> arbitraryReducedMaybe n -- generateContentRequestSafetySettings :: Maybe [SafetySetting]
     <*> arbitrary -- generateContentRequestModel :: Text
     <*> arbitraryReducedMaybe n -- generateContentRequestGenerationConfig :: Maybe GenerationConfig
-  
+
 instance Arbitrary GenerateContentResponse where
   arbitrary = sized genGenerateContentResponse
 
@@ -691,7 +694,7 @@ genGenerateContentResponse n =
     <*> arbitraryReducedMaybe n -- generateContentResponseModelVersion :: Maybe Text
     <*> arbitraryReducedMaybe n -- generateContentResponsePromptFeedback :: Maybe PromptFeedback
     <*> arbitraryReducedMaybe n -- generateContentResponseResponseId :: Maybe Text
-  
+
 instance Arbitrary GenerateMessageRequest where
   arbitrary = sized genGenerateMessageRequest
 
@@ -703,7 +706,7 @@ genGenerateMessageRequest n =
     <*> arbitraryReducedMaybe n -- generateMessageRequestCandidateCount :: Maybe Int
     <*> arbitraryReducedMaybe n -- generateMessageRequestTopK :: Maybe Int
     <*> arbitraryReduced n -- generateMessageRequestPrompt :: MessagePrompt
-  
+
 instance Arbitrary GenerateMessageResponse where
   arbitrary = sized genGenerateMessageResponse
 
@@ -713,7 +716,7 @@ genGenerateMessageResponse n =
     <$> arbitraryReducedMaybe n -- generateMessageResponseCandidates :: Maybe [Message]
     <*> arbitraryReducedMaybe n -- generateMessageResponseMessages :: Maybe [Message]
     <*> arbitraryReducedMaybe n -- generateMessageResponseFilters :: Maybe [ContentFilter]
-  
+
 instance Arbitrary GenerateTextRequest where
   arbitrary = sized genGenerateTextRequest
 
@@ -728,7 +731,7 @@ genGenerateTextRequest n =
     <*> arbitraryReducedMaybe n -- generateTextRequestTopK :: Maybe Int
     <*> arbitraryReducedMaybe n -- generateTextRequestTopP :: Maybe Float
     <*> arbitraryReducedMaybe n -- generateTextRequestCandidateCount :: Maybe Int
-  
+
 instance Arbitrary GenerateTextResponse where
   arbitrary = sized genGenerateTextResponse
 
@@ -738,7 +741,7 @@ genGenerateTextResponse n =
     <$> arbitraryReducedMaybe n -- generateTextResponseSafetyFeedback :: Maybe [SafetyFeedback]
     <*> arbitraryReducedMaybe n -- generateTextResponseCandidates :: Maybe [TextCompletion]
     <*> arbitraryReducedMaybe n -- generateTextResponseFilters :: Maybe [ContentFilter]
-  
+
 instance Arbitrary GenerateVideoResponse where
   arbitrary = sized genGenerateVideoResponse
 
@@ -748,7 +751,7 @@ genGenerateVideoResponse n =
     <$> arbitraryReducedMaybe n -- generateVideoResponseGeneratedSamples :: Maybe [Media]
     <*> arbitraryReducedMaybe n -- generateVideoResponseRaiMediaFilteredCount :: Maybe Int
     <*> arbitraryReducedMaybe n -- generateVideoResponseRaiMediaFilteredReasons :: Maybe [Text]
-  
+
 instance Arbitrary GeneratedFile where
   arbitrary = sized genGeneratedFile
 
@@ -759,7 +762,7 @@ genGeneratedFile n =
     <*> arbitraryReducedMaybe n -- generatedFileName :: Maybe Text
     <*> arbitraryReducedMaybe n -- generatedFileState :: Maybe E'State2
     <*> arbitraryReducedMaybe n -- generatedFileMimeType :: Maybe Text
-  
+
 instance Arbitrary GenerationConfig where
   arbitrary = sized genGenerationConfig
 
@@ -785,7 +788,7 @@ genGenerationConfig n =
     <*> arbitraryReducedMaybe n -- generationConfigSeed :: Maybe Int
     <*> arbitraryReducedMaybe n -- generationConfigMaxOutputTokens :: Maybe Int
     <*> arbitraryReducedMaybe n -- generationConfigResponseMimeType :: Maybe Text
-  
+
 instance Arbitrary GoogleSearch where
   arbitrary = sized genGoogleSearch
 
@@ -793,7 +796,7 @@ genGoogleSearch :: Int -> Gen GoogleSearch
 genGoogleSearch n =
   GoogleSearch
     <$> arbitraryReducedMaybe n -- googleSearchTimeRangeFilter :: Maybe Interval
-  
+
 instance Arbitrary GoogleSearchRetrieval where
   arbitrary = sized genGoogleSearchRetrieval
 
@@ -801,7 +804,7 @@ genGoogleSearchRetrieval :: Int -> Gen GoogleSearchRetrieval
 genGoogleSearchRetrieval n =
   GoogleSearchRetrieval
     <$> arbitraryReducedMaybe n -- googleSearchRetrievalDynamicRetrievalConfig :: Maybe DynamicRetrievalConfig
-  
+
 instance Arbitrary GroundingAttribution where
   arbitrary = sized genGroundingAttribution
 
@@ -810,7 +813,7 @@ genGroundingAttribution n =
   GroundingAttribution
     <$> arbitraryReducedMaybe n -- groundingAttributionSourceId :: Maybe AttributionSourceId
     <*> arbitraryReducedMaybe n -- groundingAttributionContent :: Maybe Content
-  
+
 instance Arbitrary GroundingChunk where
   arbitrary = sized genGroundingChunk
 
@@ -818,7 +821,7 @@ genGroundingChunk :: Int -> Gen GroundingChunk
 genGroundingChunk n =
   GroundingChunk
     <$> arbitraryReducedMaybe n -- groundingChunkWeb :: Maybe Web
-  
+
 instance Arbitrary GroundingMetadata where
   arbitrary = sized genGroundingMetadata
 
@@ -830,7 +833,7 @@ genGroundingMetadata n =
     <*> arbitraryReducedMaybe n -- groundingMetadataGroundingChunks :: Maybe [GroundingChunk]
     <*> arbitraryReducedMaybe n -- groundingMetadataSearchEntryPoint :: Maybe SearchEntryPoint
     <*> arbitraryReducedMaybe n -- groundingMetadataGroundingSupports :: Maybe [GroundingSupport]
-  
+
 instance Arbitrary GroundingPassage where
   arbitrary = sized genGroundingPassage
 
@@ -839,7 +842,7 @@ genGroundingPassage n =
   GroundingPassage
     <$> arbitraryReducedMaybe n -- groundingPassageContent :: Maybe Content
     <*> arbitraryReducedMaybe n -- groundingPassageId :: Maybe Text
-  
+
 instance Arbitrary GroundingPassageId where
   arbitrary = sized genGroundingPassageId
 
@@ -848,7 +851,7 @@ genGroundingPassageId n =
   GroundingPassageId
     <$> arbitraryReducedMaybe n -- groundingPassageIdPassageId :: Maybe Text
     <*> arbitraryReducedMaybe n -- groundingPassageIdPartIndex :: Maybe Int
-  
+
 instance Arbitrary GroundingPassages where
   arbitrary = sized genGroundingPassages
 
@@ -856,7 +859,7 @@ genGroundingPassages :: Int -> Gen GroundingPassages
 genGroundingPassages n =
   GroundingPassages
     <$> arbitraryReducedMaybe n -- groundingPassagesPassages :: Maybe [GroundingPassage]
-  
+
 instance Arbitrary GroundingSupport where
   arbitrary = sized genGroundingSupport
 
@@ -866,7 +869,7 @@ genGroundingSupport n =
     <$> arbitraryReducedMaybe n -- groundingSupportConfidenceScores :: Maybe [Float]
     <*> arbitraryReducedMaybe n -- groundingSupportGroundingChunkIndices :: Maybe [Int]
     <*> arbitraryReducedMaybe n -- groundingSupportSegment :: Maybe Segment
-  
+
 instance Arbitrary Hyperparameters where
   arbitrary = sized genHyperparameters
 
@@ -877,7 +880,7 @@ genHyperparameters n =
     <*> arbitraryReducedMaybe n -- hyperparametersLearningRate :: Maybe Float
     <*> arbitraryReducedMaybe n -- hyperparametersLearningRateMultiplier :: Maybe Float
     <*> arbitraryReducedMaybe n -- hyperparametersBatchSize :: Maybe Int
-  
+
 instance Arbitrary InputFeedback where
   arbitrary = sized genInputFeedback
 
@@ -886,7 +889,7 @@ genInputFeedback n =
   InputFeedback
     <$> arbitraryReducedMaybe n -- inputFeedbackSafetyRatings :: Maybe [SafetyRating]
     <*> arbitraryReducedMaybe n -- inputFeedbackBlockReason :: Maybe E'BlockReason2
-  
+
 instance Arbitrary Interval where
   arbitrary = sized genInterval
 
@@ -895,7 +898,7 @@ genInterval n =
   Interval
     <$> arbitraryReducedMaybe n -- intervalStartTime :: Maybe DateTime
     <*> arbitraryReducedMaybe n -- intervalEndTime :: Maybe DateTime
-  
+
 instance Arbitrary ListCachedContentsResponse where
   arbitrary = sized genListCachedContentsResponse
 
@@ -904,7 +907,7 @@ genListCachedContentsResponse n =
   ListCachedContentsResponse
     <$> arbitraryReducedMaybe n -- listCachedContentsResponseNextPageToken :: Maybe Text
     <*> arbitraryReducedMaybe n -- listCachedContentsResponseCachedContents :: Maybe [CachedContent]
-  
+
 instance Arbitrary ListChunksResponse where
   arbitrary = sized genListChunksResponse
 
@@ -913,7 +916,7 @@ genListChunksResponse n =
   ListChunksResponse
     <$> arbitraryReducedMaybe n -- listChunksResponseNextPageToken :: Maybe Text
     <*> arbitraryReducedMaybe n -- listChunksResponseChunks :: Maybe [Chunk]
-  
+
 instance Arbitrary ListCorporaResponse where
   arbitrary = sized genListCorporaResponse
 
@@ -922,7 +925,7 @@ genListCorporaResponse n =
   ListCorporaResponse
     <$> arbitraryReducedMaybe n -- listCorporaResponseCorpora :: Maybe [Corpus]
     <*> arbitraryReducedMaybe n -- listCorporaResponseNextPageToken :: Maybe Text
-  
+
 instance Arbitrary ListDocumentsResponse where
   arbitrary = sized genListDocumentsResponse
 
@@ -931,7 +934,7 @@ genListDocumentsResponse n =
   ListDocumentsResponse
     <$> arbitraryReducedMaybe n -- listDocumentsResponseNextPageToken :: Maybe Text
     <*> arbitraryReducedMaybe n -- listDocumentsResponseDocuments :: Maybe [Document]
-  
+
 instance Arbitrary ListFilesResponse where
   arbitrary = sized genListFilesResponse
 
@@ -940,7 +943,7 @@ genListFilesResponse n =
   ListFilesResponse
     <$> arbitraryReducedMaybe n -- listFilesResponseNextPageToken :: Maybe Text
     <*> arbitraryReducedMaybe n -- listFilesResponseFiles :: Maybe [File]
-  
+
 instance Arbitrary ListGeneratedFilesResponse where
   arbitrary = sized genListGeneratedFilesResponse
 
@@ -949,7 +952,7 @@ genListGeneratedFilesResponse n =
   ListGeneratedFilesResponse
     <$> arbitraryReducedMaybe n -- listGeneratedFilesResponseNextPageToken :: Maybe Text
     <*> arbitraryReducedMaybe n -- listGeneratedFilesResponseGeneratedFiles :: Maybe [GeneratedFile]
-  
+
 instance Arbitrary ListModelsResponse where
   arbitrary = sized genListModelsResponse
 
@@ -958,7 +961,7 @@ genListModelsResponse n =
   ListModelsResponse
     <$> arbitraryReducedMaybe n -- listModelsResponseModels :: Maybe [Model]
     <*> arbitraryReducedMaybe n -- listModelsResponseNextPageToken :: Maybe Text
-  
+
 instance Arbitrary ListOperationsResponse where
   arbitrary = sized genListOperationsResponse
 
@@ -967,7 +970,7 @@ genListOperationsResponse n =
   ListOperationsResponse
     <$> arbitraryReducedMaybe n -- listOperationsResponseNextPageToken :: Maybe Text
     <*> arbitraryReducedMaybe n -- listOperationsResponseOperations :: Maybe [Operation]
-  
+
 instance Arbitrary ListPermissionsResponse where
   arbitrary = sized genListPermissionsResponse
 
@@ -976,7 +979,7 @@ genListPermissionsResponse n =
   ListPermissionsResponse
     <$> arbitraryReducedMaybe n -- listPermissionsResponsePermissions :: Maybe [Permission]
     <*> arbitraryReducedMaybe n -- listPermissionsResponseNextPageToken :: Maybe Text
-  
+
 instance Arbitrary ListTunedModelsResponse where
   arbitrary = sized genListTunedModelsResponse
 
@@ -985,7 +988,7 @@ genListTunedModelsResponse n =
   ListTunedModelsResponse
     <$> arbitraryReducedMaybe n -- listTunedModelsResponseNextPageToken :: Maybe Text
     <*> arbitraryReducedMaybe n -- listTunedModelsResponseTunedModels :: Maybe [TunedModel]
-  
+
 instance Arbitrary LogprobsResult where
   arbitrary = sized genLogprobsResult
 
@@ -994,7 +997,7 @@ genLogprobsResult n =
   LogprobsResult
     <$> arbitraryReducedMaybe n -- logprobsResultChosenCandidates :: Maybe [LogprobsResultCandidate]
     <*> arbitraryReducedMaybe n -- logprobsResultTopCandidates :: Maybe [TopCandidates]
-  
+
 instance Arbitrary LogprobsResultCandidate where
   arbitrary = sized genLogprobsResultCandidate
 
@@ -1004,7 +1007,7 @@ genLogprobsResultCandidate n =
     <$> arbitraryReducedMaybe n -- logprobsResultCandidateLogProbability :: Maybe Float
     <*> arbitraryReducedMaybe n -- logprobsResultCandidateTokenId :: Maybe Int
     <*> arbitraryReducedMaybe n -- logprobsResultCandidateToken :: Maybe Text
-  
+
 instance Arbitrary Media where
   arbitrary = sized genMedia
 
@@ -1012,7 +1015,7 @@ genMedia :: Int -> Gen Media
 genMedia n =
   Media
     <$> arbitraryReducedMaybe n -- mediaVideo :: Maybe Video
-  
+
 instance Arbitrary Message where
   arbitrary = sized genMessage
 
@@ -1022,7 +1025,7 @@ genMessage n =
     <$> arbitraryReducedMaybe n -- messageCitationMetadata :: Maybe CitationMetadata
     <*> arbitraryReducedMaybe n -- messageAuthor :: Maybe Text
     <*> arbitrary -- messageContent :: Text
-  
+
 instance Arbitrary MessagePrompt where
   arbitrary = sized genMessagePrompt
 
@@ -1032,7 +1035,7 @@ genMessagePrompt n =
     <$> arbitraryReducedMaybe n -- messagePromptContext :: Maybe Text
     <*> arbitraryReduced n -- messagePromptMessages :: [Message]
     <*> arbitraryReducedMaybe n -- messagePromptExamples :: Maybe [Example]
-  
+
 instance Arbitrary MetadataFilter where
   arbitrary = sized genMetadataFilter
 
@@ -1041,7 +1044,7 @@ genMetadataFilter n =
   MetadataFilter
     <$> arbitraryReduced n -- metadataFilterConditions :: [Condition]
     <*> arbitrary -- metadataFilterKey :: Text
-  
+
 instance Arbitrary ModalityTokenCount where
   arbitrary = sized genModalityTokenCount
 
@@ -1050,7 +1053,7 @@ genModalityTokenCount n =
   ModalityTokenCount
     <$> arbitraryReducedMaybe n -- modalityTokenCountTokenCount :: Maybe Int
     <*> arbitraryReducedMaybe n -- modalityTokenCountModality :: Maybe Modality
-  
+
 instance Arbitrary Model where
   arbitrary = sized genModel
 
@@ -1069,7 +1072,7 @@ genModel n =
     <*> arbitraryReducedMaybe n -- modelDescription :: Maybe Text
     <*> arbitraryReducedMaybe n -- modelMaxTemperature :: Maybe Float
     <*> arbitraryReducedMaybe n -- modelOutputTokenLimit :: Maybe Int
-  
+
 instance Arbitrary MultiSpeakerVoiceConfig where
   arbitrary = sized genMultiSpeakerVoiceConfig
 
@@ -1077,7 +1080,7 @@ genMultiSpeakerVoiceConfig :: Int -> Gen MultiSpeakerVoiceConfig
 genMultiSpeakerVoiceConfig n =
   MultiSpeakerVoiceConfig
     <$> arbitraryReduced n -- multiSpeakerVoiceConfigSpeakerVoiceConfigs :: [SpeakerVoiceConfig]
-  
+
 instance Arbitrary Operation where
   arbitrary = sized genOperation
 
@@ -1089,7 +1092,7 @@ genOperation n =
     <*> arbitraryReducedMaybe n -- operationError :: Maybe Status
     <*> arbitraryReducedMaybe n -- operationMetadata :: Maybe (Map.Map String String)
     <*> arbitraryReducedMaybe n -- operationResponse :: Maybe (Map.Map String String)
-  
+
 instance Arbitrary Part where
   arbitrary = sized genPart
 
@@ -1106,7 +1109,7 @@ genPart n =
     <*> arbitraryReducedMaybe n -- partText :: Maybe Text
     <*> arbitraryReducedMaybe n -- partThoughtSignature :: Maybe ByteArray
     <*> arbitraryReducedMaybe n -- partFunctionCall :: Maybe FunctionCall
-  
+
 instance Arbitrary Permission where
   arbitrary = sized genPermission
 
@@ -1117,7 +1120,7 @@ genPermission n =
     <*> arbitraryReducedMaybe n -- permissionGranteeType :: Maybe E'GranteeType
     <*> arbitrary -- permissionRole :: E'Role
     <*> arbitraryReducedMaybe n -- permissionEmailAddress :: Maybe Text
-  
+
 instance Arbitrary PrebuiltVoiceConfig where
   arbitrary = sized genPrebuiltVoiceConfig
 
@@ -1125,7 +1128,7 @@ genPrebuiltVoiceConfig :: Int -> Gen PrebuiltVoiceConfig
 genPrebuiltVoiceConfig n =
   PrebuiltVoiceConfig
     <$> arbitraryReducedMaybe n -- prebuiltVoiceConfigVoiceName :: Maybe Text
-  
+
 instance Arbitrary PredictLongRunningOperation where
   arbitrary = sized genPredictLongRunningOperation
 
@@ -1137,7 +1140,7 @@ genPredictLongRunningOperation n =
     <*> arbitraryReducedMaybe n -- predictLongRunningOperationError :: Maybe Status
     <*> arbitraryReducedMaybeValue n -- predictLongRunningOperationMetadata :: Maybe A.Value
     <*> arbitraryReducedMaybe n -- predictLongRunningOperationResponse :: Maybe PredictLongRunningResponse
-  
+
 instance Arbitrary PredictLongRunningRequest where
   arbitrary = sized genPredictLongRunningRequest
 
@@ -1146,7 +1149,7 @@ genPredictLongRunningRequest n =
   PredictLongRunningRequest
     <$> arbitraryReducedMaybe n -- predictLongRunningRequestParameters :: Maybe String
     <*> arbitrary -- predictLongRunningRequestInstances :: [String]
-  
+
 instance Arbitrary PredictLongRunningResponse where
   arbitrary = sized genPredictLongRunningResponse
 
@@ -1154,7 +1157,7 @@ genPredictLongRunningResponse :: Int -> Gen PredictLongRunningResponse
 genPredictLongRunningResponse n =
   PredictLongRunningResponse
     <$> arbitraryReducedMaybe n -- predictLongRunningResponseGenerateVideoResponse :: Maybe GenerateVideoResponse
-  
+
 instance Arbitrary PredictRequest where
   arbitrary = sized genPredictRequest
 
@@ -1163,7 +1166,7 @@ genPredictRequest n =
   PredictRequest
     <$> arbitrary -- predictRequestInstances :: [String]
     <*> arbitraryReducedMaybe n -- predictRequestParameters :: Maybe String
-  
+
 instance Arbitrary PredictResponse where
   arbitrary = sized genPredictResponse
 
@@ -1171,7 +1174,7 @@ genPredictResponse :: Int -> Gen PredictResponse
 genPredictResponse n =
   PredictResponse
     <$> arbitraryReducedMaybe n -- predictResponsePredictions :: Maybe [String]
-  
+
 instance Arbitrary PromptFeedback where
   arbitrary = sized genPromptFeedback
 
@@ -1180,7 +1183,7 @@ genPromptFeedback n =
   PromptFeedback
     <$> arbitraryReducedMaybe n -- promptFeedbackBlockReason :: Maybe E'BlockReason
     <*> arbitraryReducedMaybe n -- promptFeedbackSafetyRatings :: Maybe [SafetyRating]
-  
+
 instance Arbitrary QueryCorpusRequest where
   arbitrary = sized genQueryCorpusRequest
 
@@ -1190,7 +1193,7 @@ genQueryCorpusRequest n =
     <$> arbitraryReducedMaybe n -- queryCorpusRequestMetadataFilters :: Maybe [MetadataFilter]
     <*> arbitrary -- queryCorpusRequestQuery :: Text
     <*> arbitraryReducedMaybe n -- queryCorpusRequestResultsCount :: Maybe Int
-  
+
 instance Arbitrary QueryCorpusResponse where
   arbitrary = sized genQueryCorpusResponse
 
@@ -1198,7 +1201,7 @@ genQueryCorpusResponse :: Int -> Gen QueryCorpusResponse
 genQueryCorpusResponse n =
   QueryCorpusResponse
     <$> arbitraryReducedMaybe n -- queryCorpusResponseRelevantChunks :: Maybe [RelevantChunk]
-  
+
 instance Arbitrary QueryDocumentRequest where
   arbitrary = sized genQueryDocumentRequest
 
@@ -1208,7 +1211,7 @@ genQueryDocumentRequest n =
     <$> arbitrary -- queryDocumentRequestQuery :: Text
     <*> arbitraryReducedMaybe n -- queryDocumentRequestResultsCount :: Maybe Int
     <*> arbitraryReducedMaybe n -- queryDocumentRequestMetadataFilters :: Maybe [MetadataFilter]
-  
+
 instance Arbitrary QueryDocumentResponse where
   arbitrary = sized genQueryDocumentResponse
 
@@ -1216,7 +1219,7 @@ genQueryDocumentResponse :: Int -> Gen QueryDocumentResponse
 genQueryDocumentResponse n =
   QueryDocumentResponse
     <$> arbitraryReducedMaybe n -- queryDocumentResponseRelevantChunks :: Maybe [RelevantChunk]
-  
+
 instance Arbitrary RelevantChunk where
   arbitrary = sized genRelevantChunk
 
@@ -1225,7 +1228,7 @@ genRelevantChunk n =
   RelevantChunk
     <$> arbitraryReducedMaybe n -- relevantChunkChunk :: Maybe Chunk
     <*> arbitraryReducedMaybe n -- relevantChunkChunkRelevanceScore :: Maybe Float
-  
+
 instance Arbitrary RetrievalMetadata where
   arbitrary = sized genRetrievalMetadata
 
@@ -1233,7 +1236,7 @@ genRetrievalMetadata :: Int -> Gen RetrievalMetadata
 genRetrievalMetadata n =
   RetrievalMetadata
     <$> arbitraryReducedMaybe n -- retrievalMetadataGoogleSearchDynamicRetrievalScore :: Maybe Float
-  
+
 instance Arbitrary SafetyFeedback where
   arbitrary = sized genSafetyFeedback
 
@@ -1242,7 +1245,7 @@ genSafetyFeedback n =
   SafetyFeedback
     <$> arbitraryReducedMaybe n -- safetyFeedbackSetting :: Maybe SafetySetting
     <*> arbitraryReducedMaybe n -- safetyFeedbackRating :: Maybe SafetyRating
-  
+
 instance Arbitrary SafetyRating where
   arbitrary = sized genSafetyRating
 
@@ -1252,7 +1255,7 @@ genSafetyRating n =
     <$> arbitraryReduced n -- safetyRatingCategory :: HarmCategory
     <*> arbitraryReducedMaybe n -- safetyRatingBlocked :: Maybe Bool
     <*> arbitrary -- safetyRatingProbability :: E'Probability
-  
+
 instance Arbitrary SafetySetting where
   arbitrary = sized genSafetySetting
 
@@ -1261,7 +1264,7 @@ genSafetySetting n =
   SafetySetting
     <$> arbitrary -- safetySettingThreshold :: E'Threshold
     <*> arbitraryReduced n -- safetySettingCategory :: HarmCategory
-  
+
 instance Arbitrary Schema where
   arbitrary = sized genSchema
 
@@ -1290,7 +1293,7 @@ genSchema n =
     <*> arbitraryReducedMaybe n -- schemaFormat :: Maybe Text
     <*> arbitraryReducedMaybe n -- schemaEnum :: Maybe [Text]
     <*> arbitraryReducedMaybe n -- schemaMaxLength :: Maybe Text
-  
+
 instance Arbitrary SearchEntryPoint where
   arbitrary = sized genSearchEntryPoint
 
@@ -1299,7 +1302,7 @@ genSearchEntryPoint n =
   SearchEntryPoint
     <$> arbitraryReducedMaybe n -- searchEntryPointSdkBlob :: Maybe ByteArray
     <*> arbitraryReducedMaybe n -- searchEntryPointRenderedContent :: Maybe Text
-  
+
 instance Arbitrary Segment where
   arbitrary = sized genSegment
 
@@ -1310,7 +1313,7 @@ genSegment n =
     <*> arbitraryReducedMaybe n -- segmentStartIndex :: Maybe Int
     <*> arbitraryReducedMaybe n -- segmentText :: Maybe Text
     <*> arbitraryReducedMaybe n -- segmentEndIndex :: Maybe Int
-  
+
 instance Arbitrary SemanticRetrieverChunk where
   arbitrary = sized genSemanticRetrieverChunk
 
@@ -1319,7 +1322,7 @@ genSemanticRetrieverChunk n =
   SemanticRetrieverChunk
     <$> arbitraryReducedMaybe n -- semanticRetrieverChunkChunk :: Maybe Text
     <*> arbitraryReducedMaybe n -- semanticRetrieverChunkSource :: Maybe Text
-  
+
 instance Arbitrary SemanticRetrieverConfig where
   arbitrary = sized genSemanticRetrieverConfig
 
@@ -1331,7 +1334,7 @@ genSemanticRetrieverConfig n =
     <*> arbitraryReducedMaybe n -- semanticRetrieverConfigMaxChunksCount :: Maybe Int
     <*> arbitraryReducedMaybe n -- semanticRetrieverConfigMetadataFilters :: Maybe [MetadataFilter]
     <*> arbitraryReducedMaybe n -- semanticRetrieverConfigMinimumRelevanceScore :: Maybe Float
-  
+
 instance Arbitrary SpeakerVoiceConfig where
   arbitrary = sized genSpeakerVoiceConfig
 
@@ -1340,7 +1343,7 @@ genSpeakerVoiceConfig n =
   SpeakerVoiceConfig
     <$> arbitraryReduced n -- speakerVoiceConfigVoiceConfig :: VoiceConfig
     <*> arbitrary -- speakerVoiceConfigSpeaker :: Text
-  
+
 instance Arbitrary SpeechConfig where
   arbitrary = sized genSpeechConfig
 
@@ -1350,7 +1353,7 @@ genSpeechConfig n =
     <$> arbitraryReducedMaybe n -- speechConfigVoiceConfig :: Maybe VoiceConfig
     <*> arbitraryReducedMaybe n -- speechConfigLanguageCode :: Maybe Text
     <*> arbitraryReducedMaybe n -- speechConfigMultiSpeakerVoiceConfig :: Maybe MultiSpeakerVoiceConfig
-  
+
 instance Arbitrary Status where
   arbitrary = sized genStatus
 
@@ -1360,7 +1363,7 @@ genStatus n =
     <$> arbitraryReducedMaybe n -- statusCode :: Maybe Int
     <*> arbitraryReducedMaybe n -- statusDetails :: Maybe [(Map.Map String String)]
     <*> arbitraryReducedMaybe n -- statusMessage :: Maybe Text
-  
+
 instance Arbitrary StringList where
   arbitrary = sized genStringList
 
@@ -1368,7 +1371,7 @@ genStringList :: Int -> Gen StringList
 genStringList n =
   StringList
     <$> arbitraryReducedMaybe n -- stringListValues :: Maybe [Text]
-  
+
 instance Arbitrary TextCompletion where
   arbitrary = sized genTextCompletion
 
@@ -1378,7 +1381,7 @@ genTextCompletion n =
     <$> arbitraryReducedMaybe n -- textCompletionSafetyRatings :: Maybe [SafetyRating]
     <*> arbitraryReducedMaybe n -- textCompletionOutput :: Maybe Text
     <*> arbitraryReducedMaybe n -- textCompletionCitationMetadata :: Maybe CitationMetadata
-  
+
 instance Arbitrary TextPrompt where
   arbitrary = sized genTextPrompt
 
@@ -1386,7 +1389,7 @@ genTextPrompt :: Int -> Gen TextPrompt
 genTextPrompt n =
   TextPrompt
     <$> arbitrary -- textPromptText :: Text
-  
+
 instance Arbitrary ThinkingConfig where
   arbitrary = sized genThinkingConfig
 
@@ -1395,7 +1398,7 @@ genThinkingConfig n =
   ThinkingConfig
     <$> arbitraryReducedMaybe n -- thinkingConfigThinkingBudget :: Maybe Int
     <*> arbitraryReducedMaybe n -- thinkingConfigIncludeThoughts :: Maybe Bool
-  
+
 instance Arbitrary Tool where
   arbitrary = sized genTool
 
@@ -1407,7 +1410,7 @@ genTool n =
     <*> arbitraryReducedMaybe n -- toolGoogleSearch :: Maybe GoogleSearch
     <*> arbitraryReducedMaybeValue n -- toolCodeExecution :: Maybe A.Value
     <*> arbitraryReducedMaybeValue n -- toolUrlContext :: Maybe A.Value
-  
+
 instance Arbitrary ToolConfig where
   arbitrary = sized genToolConfig
 
@@ -1415,7 +1418,7 @@ genToolConfig :: Int -> Gen ToolConfig
 genToolConfig n =
   ToolConfig
     <$> arbitraryReducedMaybe n -- toolConfigFunctionCallingConfig :: Maybe FunctionCallingConfig
-  
+
 instance Arbitrary TopCandidates where
   arbitrary = sized genTopCandidates
 
@@ -1423,7 +1426,7 @@ genTopCandidates :: Int -> Gen TopCandidates
 genTopCandidates n =
   TopCandidates
     <$> arbitraryReducedMaybe n -- topCandidatesCandidates :: Maybe [LogprobsResultCandidate]
-  
+
 instance Arbitrary TransferOwnershipRequest where
   arbitrary = sized genTransferOwnershipRequest
 
@@ -1431,7 +1434,7 @@ genTransferOwnershipRequest :: Int -> Gen TransferOwnershipRequest
 genTransferOwnershipRequest n =
   TransferOwnershipRequest
     <$> arbitrary -- transferOwnershipRequestEmailAddress :: Text
-  
+
 instance Arbitrary TunedModel where
   arbitrary = sized genTunedModel
 
@@ -1451,7 +1454,7 @@ genTunedModel n =
     <*> arbitraryReducedMaybe n -- tunedModelTopP :: Maybe Float
     <*> arbitraryReducedMaybe n -- tunedModelTopK :: Maybe Int
     <*> arbitraryReducedMaybe n -- tunedModelState :: Maybe E'State3
-  
+
 instance Arbitrary TunedModelSource where
   arbitrary = sized genTunedModelSource
 
@@ -1460,7 +1463,7 @@ genTunedModelSource n =
   TunedModelSource
     <$> arbitraryReducedMaybe n -- tunedModelSourceTunedModel :: Maybe Text
     <*> arbitraryReducedMaybe n -- tunedModelSourceBaseModel :: Maybe Text
-  
+
 instance Arbitrary TuningExample where
   arbitrary = sized genTuningExample
 
@@ -1469,7 +1472,7 @@ genTuningExample n =
   TuningExample
     <$> arbitraryReducedMaybe n -- tuningExampleTextInput :: Maybe Text
     <*> arbitrary -- tuningExampleOutput :: Text
-  
+
 instance Arbitrary TuningExamples where
   arbitrary = sized genTuningExamples
 
@@ -1477,7 +1480,7 @@ genTuningExamples :: Int -> Gen TuningExamples
 genTuningExamples n =
   TuningExamples
     <$> arbitraryReducedMaybe n -- tuningExamplesExamples :: Maybe [TuningExample]
-  
+
 instance Arbitrary TuningSnapshot where
   arbitrary = sized genTuningSnapshot
 
@@ -1488,7 +1491,7 @@ genTuningSnapshot n =
     <*> arbitraryReducedMaybe n -- tuningSnapshotComputeTime :: Maybe DateTime
     <*> arbitraryReducedMaybe n -- tuningSnapshotStep :: Maybe Int
     <*> arbitraryReducedMaybe n -- tuningSnapshotEpoch :: Maybe Int
-  
+
 instance Arbitrary TuningTask where
   arbitrary = sized genTuningTask
 
@@ -1500,7 +1503,7 @@ genTuningTask n =
     <*> arbitraryReducedMaybe n -- tuningTaskHyperparameters :: Maybe Hyperparameters
     <*> arbitraryReducedMaybe n -- tuningTaskCompleteTime :: Maybe DateTime
     <*> arbitraryReducedMaybe n -- tuningTaskSnapshots :: Maybe [TuningSnapshot]
-  
+
 instance Arbitrary UpdateChunkRequest where
   arbitrary = sized genUpdateChunkRequest
 
@@ -1509,7 +1512,7 @@ genUpdateChunkRequest n =
   UpdateChunkRequest
     <$> arbitrary -- updateChunkRequestUpdateMask :: Text
     <*> arbitraryReduced n -- updateChunkRequestChunk :: Chunk
-  
+
 instance Arbitrary UrlContextMetadata where
   arbitrary = sized genUrlContextMetadata
 
@@ -1517,7 +1520,7 @@ genUrlContextMetadata :: Int -> Gen UrlContextMetadata
 genUrlContextMetadata n =
   UrlContextMetadata
     <$> arbitraryReducedMaybe n -- urlContextMetadataUrlMetadata :: Maybe [UrlMetadata]
-  
+
 instance Arbitrary UrlMetadata where
   arbitrary = sized genUrlMetadata
 
@@ -1526,7 +1529,7 @@ genUrlMetadata n =
   UrlMetadata
     <$> arbitraryReducedMaybe n -- urlMetadataRetrievedUrl :: Maybe Text
     <*> arbitraryReducedMaybe n -- urlMetadataUrlRetrievalStatus :: Maybe E'UrlRetrievalStatus
-  
+
 instance Arbitrary UsageMetadata where
   arbitrary = sized genUsageMetadata
 
@@ -1543,7 +1546,7 @@ genUsageMetadata n =
     <*> arbitraryReducedMaybe n -- usageMetadataTotalTokenCount :: Maybe Int
     <*> arbitraryReducedMaybe n -- usageMetadataCacheTokensDetails :: Maybe [ModalityTokenCount]
     <*> arbitraryReducedMaybe n -- usageMetadataToolUsePromptTokensDetails :: Maybe [ModalityTokenCount]
-  
+
 instance Arbitrary Video where
   arbitrary = sized genVideo
 
@@ -1552,7 +1555,7 @@ genVideo n =
   Video
     <$> arbitraryReducedMaybe n -- videoVideo :: Maybe ByteArray
     <*> arbitraryReducedMaybe n -- videoUri :: Maybe Text
-  
+
 instance Arbitrary VideoFileMetadata where
   arbitrary = sized genVideoFileMetadata
 
@@ -1560,7 +1563,7 @@ genVideoFileMetadata :: Int -> Gen VideoFileMetadata
 genVideoFileMetadata n =
   VideoFileMetadata
     <$> arbitraryReducedMaybe n -- videoFileMetadataVideoDuration :: Maybe Text
-  
+
 instance Arbitrary VideoMetadata where
   arbitrary = sized genVideoMetadata
 
@@ -1570,7 +1573,7 @@ genVideoMetadata n =
     <$> arbitraryReducedMaybe n -- videoMetadataEndOffset :: Maybe Text
     <*> arbitraryReducedMaybe n -- videoMetadataStartOffset :: Maybe Text
     <*> arbitraryReducedMaybe n -- videoMetadataFps :: Maybe Double
-  
+
 instance Arbitrary VoiceConfig where
   arbitrary = sized genVoiceConfig
 
@@ -1578,7 +1581,7 @@ genVoiceConfig :: Int -> Gen VoiceConfig
 genVoiceConfig n =
   VoiceConfig
     <$> arbitraryReducedMaybe n -- voiceConfigPrebuiltVoiceConfig :: Maybe PrebuiltVoiceConfig
-  
+
 instance Arbitrary Web where
   arbitrary = sized genWeb
 
@@ -1587,9 +1590,6 @@ genWeb n =
   Web
     <$> arbitraryReducedMaybe n -- webTitle :: Maybe Text
     <*> arbitraryReducedMaybe n -- webUri :: Maybe Text
-  
-
-
 
 instance Arbitrary E'Alt where
   arbitrary = arbitraryBoundedEnum
@@ -1680,4 +1680,3 @@ instance Arbitrary ModelType where
 
 instance Arbitrary TaskType where
   arbitrary = arbitraryBoundedEnum
-

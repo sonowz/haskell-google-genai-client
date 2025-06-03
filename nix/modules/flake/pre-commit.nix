@@ -13,7 +13,7 @@
           enable = true;
           package = config.fourmolu.wrapper;
         };
-        hlint.enable = true;
+        #hlint.enable = true;
       };
     };
 
