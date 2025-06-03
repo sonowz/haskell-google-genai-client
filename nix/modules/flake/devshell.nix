@@ -12,6 +12,7 @@
       packages = with pkgs; [
         nixd
         ghciwatch
+        openapi-generator-cli
       ];
     };
   };
