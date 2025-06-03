@@ -6,7 +6,7 @@
 module Main where
 
 import Data.Typeable (Proxy (..))
-import Test.Hspec
+import Test.Hspec hiding (Example) -- TODO: 'hiding' should be automatically added when generating the test suite
 import Test.Hspec.QuickCheck
 
 import Instances ()
