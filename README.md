@@ -26,7 +26,7 @@ cabal test
 
 # Example Usage
 
-Here is a working example that uses Gemini LLM to generate text:
+Here is a working example that uses 'generateContent' API to generate text using Gemini model:
 
 ```haskell
 {-# LANGUAGE OverloadedStrings #-}
@@ -36,16 +36,17 @@ import Network.HTTP.Client.TLS (newTlsManager)
 import Network.HTTP.Types (QueryItem)
 import Data.ByteString.Lazy qualified as LBS
 
+apiKeyParam :: QueryItem
+apiKeyParam = ("key", Just "<GEMINI_API_KEY>")
+
 model :: Model2
 model = Model2 "gemini-2.0-flash-001"
 
 requestBody :: GenerateContentRequest
 requestBody = mkGenerateContentRequest [content] "gemini-2.0-flash-001" where
-  content = Content (Just [textPart]) Nothing
-  textPart = mkPart {partText = Just "What is the capital of Korea?"}
-
-apiKeyParam :: QueryItem
-apiKeyParam = ("key", Just "<GEMINI_API_KEY>")
+  content = mkContent { contentParts = Just [textPart] }
+  textPart = mkPart { partText = Just query }
+  query = "What is the capital of Korea?"
 
 request :: ClientRequest GenerateContent MimeJSON GenerateContentResponse MimeJSON
 request = flip addQuery [apiKeyParam] $ flip setBodyParam requestBody $ generateContent model
