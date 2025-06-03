@@ -30,3 +30,4 @@ git_push.sh
 .gitignore
 stack.yaml
 README.md
+haskell-google-genai-client.cabal

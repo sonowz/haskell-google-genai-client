@@ -1948,7 +1948,7 @@ mkFileData fileDataFileUri =
 -- | FunctionCall
 -- A predicted `FunctionCall` returned from the model that contains a string representing the `FunctionDeclaration.name` with the arguments and their values.
 data FunctionCall = FunctionCall
-  { functionCallArgs :: !(Maybe (Map.Map String AnyType)) -- ^ "args" - Optional. The function parameters and values in JSON object format.
+  { functionCallArgs :: !(Maybe (Map.Map String String)) -- ^ "args" - Optional. The function parameters and values in JSON object format.
   , functionCallId :: !(Maybe Text) -- ^ "id" - Optional. The unique id of the function call. If populated, the client to execute the &#x60;function_call&#x60; and return the response with the matching &#x60;id&#x60;.
   , functionCallName :: !(Text) -- ^ /Required/ "name" - Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
   } deriving (P.Show, P.Eq, P.Typeable)
@@ -2024,8 +2024,8 @@ data FunctionDeclaration = FunctionDeclaration
   , functionDeclarationBehavior :: !(Maybe E'Behavior) -- ^ "behavior" - Optional. Specifies the function Behavior. Currently only supported by the BidiGenerateContent method.
   , functionDeclarationDescription :: !(Text) -- ^ /Required/ "description" - Required. A brief description of the function.
   , functionDeclarationResponse :: !(Maybe Schema) -- ^ "response" - Optional. Describes the output from this function in JSON Schema format. Reflects the Open API 3.03 Response Object. The Schema defines the type used for the response value of the function.
-  , functionDeclarationResponseJsonSchema :: !(Maybe AnyType) -- ^ "responseJsonSchema" - Optional. Describes the output from this function in JSON Schema format. The value specified by the schema is the response value of the function.  This field is mutually exclusive with &#x60;response&#x60;.
-  , functionDeclarationParametersJsonSchema :: !(Maybe AnyType) -- ^ "parametersJsonSchema" - Optional. Describes the parameters to the function in JSON Schema format. The schema must describe an object where the properties are the parameters to the function. For example:  &#x60;&#x60;&#x60; {   \&quot;type\&quot;: \&quot;object\&quot;,   \&quot;properties\&quot;: {     \&quot;name\&quot;: { \&quot;type\&quot;: \&quot;string\&quot; },     \&quot;age\&quot;: { \&quot;type\&quot;: \&quot;integer\&quot; }   },   \&quot;additionalProperties\&quot;: false,   \&quot;required\&quot;: [\&quot;name\&quot;, \&quot;age\&quot;],   \&quot;propertyOrdering\&quot;: [\&quot;name\&quot;, \&quot;age\&quot;] } &#x60;&#x60;&#x60;  This field is mutually exclusive with &#x60;parameters&#x60;.
+  , functionDeclarationResponseJsonSchema :: !(Maybe String) -- ^ "responseJsonSchema" - Optional. Describes the output from this function in JSON Schema format. The value specified by the schema is the response value of the function.  This field is mutually exclusive with &#x60;response&#x60;.
+  , functionDeclarationParametersJsonSchema :: !(Maybe String) -- ^ "parametersJsonSchema" - Optional. Describes the parameters to the function in JSON Schema format. The schema must describe an object where the properties are the parameters to the function. For example:  &#x60;&#x60;&#x60; {   \&quot;type\&quot;: \&quot;object\&quot;,   \&quot;properties\&quot;: {     \&quot;name\&quot;: { \&quot;type\&quot;: \&quot;string\&quot; },     \&quot;age\&quot;: { \&quot;type\&quot;: \&quot;integer\&quot; }   },   \&quot;additionalProperties\&quot;: false,   \&quot;required\&quot;: [\&quot;name\&quot;, \&quot;age\&quot;],   \&quot;propertyOrdering\&quot;: [\&quot;name\&quot;, \&quot;age\&quot;] } &#x60;&#x60;&#x60;  This field is mutually exclusive with &#x60;parameters&#x60;.
   } deriving (P.Show, P.Eq, P.Typeable)
 
 -- | FromJSON FunctionDeclaration
@@ -2078,7 +2078,7 @@ data FunctionResponse = FunctionResponse
   , functionResponseId :: !(Maybe Text) -- ^ "id" - Optional. The id of the function call this response is for. Populated by the client to match the corresponding function call &#x60;id&#x60;.
   , functionResponseWillContinue :: !(Maybe Bool) -- ^ "willContinue" - Optional. Signals that function call continues, and more responses will be returned, turning the function call into a generator. Is only applicable to NON_BLOCKING function calls, is ignored otherwise. If set to false, future responses will not be considered. It is allowed to return empty &#x60;response&#x60; with &#x60;will_continue&#x3D;False&#x60; to signal that the function call is finished. This may still trigger the model generation. To avoid triggering the generation and finish the function call, additionally set &#x60;scheduling&#x60; to &#x60;SILENT&#x60;.
   , functionResponseName :: !(Text) -- ^ /Required/ "name" - Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
-  , functionResponseResponse :: !((Map.Map String AnyType)) -- ^ /Required/ "response" - Required. The function response in JSON object format.
+  , functionResponseResponse :: !((Map.Map String String)) -- ^ /Required/ "response" - Required. The function response in JSON object format.
   } deriving (P.Show, P.Eq, P.Typeable)
 
 -- | FromJSON FunctionResponse
@@ -2106,7 +2106,7 @@ instance A.ToJSON FunctionResponse where
 -- | Construct a value of type 'FunctionResponse' (by applying it's required fields, if any)
 mkFunctionResponse
   :: Text -- ^ 'functionResponseName': Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
-  -> (Map.Map String AnyType) -- ^ 'functionResponseResponse': Required. The function response in JSON object format.
+  -> (Map.Map String String) -- ^ 'functionResponseResponse': Required. The function response in JSON object format.
   -> FunctionResponse
 mkFunctionResponse functionResponseName functionResponseResponse =
   FunctionResponse
@@ -2575,7 +2575,7 @@ data GenerationConfig = GenerationConfig
   , generationConfigMediaResolution :: !(Maybe E'MediaResolution) -- ^ "mediaResolution" - Optional. If specified, the media resolution specified will be used.
   , generationConfigStopSequences :: !(Maybe [Text]) -- ^ "stopSequences" - Optional. The set of character sequences (up to 5) that will stop output generation. If specified, the API will stop at the first appearance of a &#x60;stop_sequence&#x60;. The stop sequence will not be included as part of the response.
   , generationConfigSpeechConfig :: !(Maybe SpeechConfig) -- ^ "speechConfig" - Optional. The speech generation config.
-  , generationConfigResponseJsonSchema :: !(Maybe AnyType) -- ^ "responseJsonSchema" - Optional. Output schema of the generated response. This is an alternative to &#x60;response_schema&#x60; that accepts [JSON Schema](https://json-schema.org/).  If set, &#x60;response_schema&#x60; must be omitted, but &#x60;response_mime_type&#x60; is required.  While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported:  - &#x60;$id&#x60; - &#x60;$defs&#x60; - &#x60;$ref&#x60; - &#x60;$anchor&#x60; - &#x60;type&#x60; - &#x60;format&#x60; - &#x60;title&#x60; - &#x60;description&#x60; - &#x60;enum&#x60; (for strings and numbers) - &#x60;items&#x60; - &#x60;prefixItems&#x60; - &#x60;minItems&#x60; - &#x60;maxItems&#x60; - &#x60;minimum&#x60; - &#x60;maximum&#x60; - &#x60;anyOf&#x60; - &#x60;oneOf&#x60; (interpreted the same as &#x60;anyOf&#x60;) - &#x60;properties&#x60; - &#x60;additionalProperties&#x60; - &#x60;required&#x60;  The non-standard &#x60;propertyOrdering&#x60; property may also be set.  Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If &#x60;$ref&#x60; is set on a sub-schema, no other properties, except for than those starting as a &#x60;$&#x60;, may be set.
+  , generationConfigResponseJsonSchema :: !(Maybe String) -- ^ "responseJsonSchema" - Optional. Output schema of the generated response. This is an alternative to &#x60;response_schema&#x60; that accepts [JSON Schema](https://json-schema.org/).  If set, &#x60;response_schema&#x60; must be omitted, but &#x60;response_mime_type&#x60; is required.  While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported:  - &#x60;$id&#x60; - &#x60;$defs&#x60; - &#x60;$ref&#x60; - &#x60;$anchor&#x60; - &#x60;type&#x60; - &#x60;format&#x60; - &#x60;title&#x60; - &#x60;description&#x60; - &#x60;enum&#x60; (for strings and numbers) - &#x60;items&#x60; - &#x60;prefixItems&#x60; - &#x60;minItems&#x60; - &#x60;maxItems&#x60; - &#x60;minimum&#x60; - &#x60;maximum&#x60; - &#x60;anyOf&#x60; - &#x60;oneOf&#x60; (interpreted the same as &#x60;anyOf&#x60;) - &#x60;properties&#x60; - &#x60;additionalProperties&#x60; - &#x60;required&#x60;  The non-standard &#x60;propertyOrdering&#x60; property may also be set.  Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If &#x60;$ref&#x60; is set on a sub-schema, no other properties, except for than those starting as a &#x60;$&#x60;, may be set.
   , generationConfigPresencePenalty :: !(Maybe Float) -- ^ "presencePenalty" - Optional. Presence penalty applied to the next token&#39;s logprobs if the token has already been seen in the response.  This penalty is binary on/off and not dependant on the number of times the token is used (after the first). Use frequency_penalty for a penalty that increases with each use.  A positive penalty will discourage the use of tokens that have already been used in the response, increasing the vocabulary.  A negative penalty will encourage the use of tokens that have already been used in the response, decreasing the vocabulary.
   , generationConfigTopP :: !(Maybe Float) -- ^ "topP" - Optional. The maximum cumulative probability of tokens to consider when sampling.  The model uses combined Top-k and Top-p (nucleus) sampling.  Tokens are sorted based on their assigned probabilities so that only the most likely tokens are considered. Top-k sampling directly limits the maximum number of tokens to consider, while Nucleus sampling limits the number of tokens based on the cumulative probability.  Note: The default value varies by &#x60;Model&#x60; and is specified by the&#x60;Model.top_p&#x60; attribute returned from the &#x60;getModel&#x60; function. An empty &#x60;top_k&#x60; attribute indicates that the model doesn&#39;t apply top-k sampling and doesn&#39;t allow setting &#x60;top_k&#x60; on requests.
   , generationConfigTemperature :: !(Maybe Float) -- ^ "temperature" - Optional. Controls the randomness of the output.  Note: The default value varies by model, see the &#x60;Model.temperature&#x60; attribute of the &#x60;Model&#x60; returned from the &#x60;getModel&#x60; function.  Values can range from [0.0, 2.0].
@@ -3756,8 +3756,8 @@ data Operation = Operation
   { operationDone :: !(Maybe Bool) -- ^ "done" - If the value is &#x60;false&#x60;, it means the operation is still in progress. If &#x60;true&#x60;, the operation is completed, and either &#x60;error&#x60; or &#x60;response&#x60; is available.
   , operationName :: !(Maybe Text) -- ^ "name" - The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the &#x60;name&#x60; should be a resource name ending with &#x60;operations/{unique_id}&#x60;.
   , operationError :: !(Maybe Status) -- ^ "error" - The error result of the operation in case of failure or cancellation.
-  , operationMetadata :: !(Maybe (Map.Map String AnyType)) -- ^ "metadata" - Service-specific metadata associated with the operation.  It typically contains progress information and common metadata such as create time. Some services might not provide such metadata.  Any method that returns a long-running operation should document the metadata type, if any.
-  , operationResponse :: !(Maybe (Map.Map String AnyType)) -- ^ "response" - The normal, successful response of the operation.  If the original method returns no data on success, such as &#x60;Delete&#x60;, the response is &#x60;google.protobuf.Empty&#x60;.  If the original method is standard &#x60;Get&#x60;/&#x60;Create&#x60;/&#x60;Update&#x60;, the response should be the resource.  For other methods, the response should have the type &#x60;XxxResponse&#x60;, where &#x60;Xxx&#x60; is the original method name.  For example, if the original method name is &#x60;TakeSnapshot()&#x60;, the inferred response type is &#x60;TakeSnapshotResponse&#x60;.
+  , operationMetadata :: !(Maybe (Map.Map String String)) -- ^ "metadata" - Service-specific metadata associated with the operation.  It typically contains progress information and common metadata such as create time. Some services might not provide such metadata.  Any method that returns a long-running operation should document the metadata type, if any.
+  , operationResponse :: !(Maybe (Map.Map String String)) -- ^ "response" - The normal, successful response of the operation.  If the original method returns no data on success, such as &#x60;Delete&#x60;, the response is &#x60;google.protobuf.Empty&#x60;.  If the original method is standard &#x60;Get&#x60;/&#x60;Create&#x60;/&#x60;Update&#x60;, the response should be the resource.  For other methods, the response should have the type &#x60;XxxResponse&#x60;, where &#x60;Xxx&#x60; is the original method name.  For example, if the original method name is &#x60;TakeSnapshot()&#x60;, the inferred response type is &#x60;TakeSnapshotResponse&#x60;.
   } deriving (P.Show, P.Eq, P.Typeable)
 
 -- | FromJSON Operation
@@ -3979,8 +3979,8 @@ mkPredictLongRunningOperation =
 -- | PredictLongRunningRequest
 -- Request message for [PredictionService.PredictLongRunning].
 data PredictLongRunningRequest = PredictLongRunningRequest
-  { predictLongRunningRequestParameters :: !(Maybe AnyType) -- ^ "parameters" - Optional. The parameters that govern the prediction call.
-  , predictLongRunningRequestInstances :: !([AnyType]) -- ^ /Required/ "instances" - Required. The instances that are the input to the prediction call.
+  { predictLongRunningRequestParameters :: !(Maybe String) -- ^ "parameters" - Optional. The parameters that govern the prediction call.
+  , predictLongRunningRequestInstances :: !([String]) -- ^ /Required/ "instances" - Required. The instances that are the input to the prediction call.
   } deriving (P.Show, P.Eq, P.Typeable)
 
 -- | FromJSON PredictLongRunningRequest
@@ -4001,7 +4001,7 @@ instance A.ToJSON PredictLongRunningRequest where
 
 -- | Construct a value of type 'PredictLongRunningRequest' (by applying it's required fields, if any)
 mkPredictLongRunningRequest
-  :: [AnyType] -- ^ 'predictLongRunningRequestInstances': Required. The instances that are the input to the prediction call.
+  :: [String] -- ^ 'predictLongRunningRequestInstances': Required. The instances that are the input to the prediction call.
   -> PredictLongRunningRequest
 mkPredictLongRunningRequest predictLongRunningRequestInstances =
   PredictLongRunningRequest
@@ -4042,8 +4042,8 @@ mkPredictLongRunningResponse =
 -- | PredictRequest
 -- Request message for PredictionService.Predict.
 data PredictRequest = PredictRequest
-  { predictRequestInstances :: !([AnyType]) -- ^ /Required/ "instances" - Required. The instances that are the input to the prediction call.
-  , predictRequestParameters :: !(Maybe AnyType) -- ^ "parameters" - Optional. The parameters that govern the prediction call.
+  { predictRequestInstances :: !([String]) -- ^ /Required/ "instances" - Required. The instances that are the input to the prediction call.
+  , predictRequestParameters :: !(Maybe String) -- ^ "parameters" - Optional. The parameters that govern the prediction call.
   } deriving (P.Show, P.Eq, P.Typeable)
 
 -- | FromJSON PredictRequest
@@ -4064,7 +4064,7 @@ instance A.ToJSON PredictRequest where
 
 -- | Construct a value of type 'PredictRequest' (by applying it's required fields, if any)
 mkPredictRequest
-  :: [AnyType] -- ^ 'predictRequestInstances': Required. The instances that are the input to the prediction call.
+  :: [String] -- ^ 'predictRequestInstances': Required. The instances that are the input to the prediction call.
   -> PredictRequest
 mkPredictRequest predictRequestInstances =
   PredictRequest
@@ -4076,7 +4076,7 @@ mkPredictRequest predictRequestInstances =
 -- | PredictResponse
 -- Response message for [PredictionService.Predict].
 data PredictResponse = PredictResponse
-  { predictResponsePredictions :: !(Maybe [AnyType]) -- ^ "predictions" - The outputs of the prediction call.
+  { predictResponsePredictions :: !(Maybe [String]) -- ^ "predictions" - The outputs of the prediction call.
   } deriving (P.Show, P.Eq, P.Typeable)
 
 -- | FromJSON PredictResponse
@@ -4450,12 +4450,12 @@ data Schema = Schema
   , schemaRequired :: !(Maybe [Text]) -- ^ "required" - Optional. Required properties of Type.OBJECT.
   , schemaMinProperties :: !(Maybe Text) -- ^ "minProperties" - Optional. Minimum number of the properties for Type.OBJECT.
   , schemaMaxItems :: !(Maybe Text) -- ^ "maxItems" - Optional. Maximum number of the elements for Type.ARRAY.
-  , schemaExample :: !(Maybe AnyType) -- ^ "example" - Optional. Example of the object. Will only populated when the object is the root.
+  , schemaExample :: !(Maybe String) -- ^ "example" - Optional. Example of the object. Will only populated when the object is the root.
   , schemaTitle :: !(Maybe Text) -- ^ "title" - Optional. The title of the schema.
   , schemaMinItems :: !(Maybe Text) -- ^ "minItems" - Optional. Minimum number of the elements for Type.ARRAY.
   , schemaDescription :: !(Maybe Text) -- ^ "description" - Optional. A brief description of the parameter. This could contain examples of use. Parameter description may be formatted as Markdown.
   , schemaType :: !(ModelType) -- ^ /Required/ "type" - Required. Data type.
-  , schemaDefault :: !(Maybe AnyType) -- ^ "default" - Optional. Default value of the field. Per JSON Schema, this field is intended for documentation generators and doesn&#39;t affect validation. Thus it&#39;s included here and ignored so that developers who send schemas with a &#x60;default&#x60; field don&#39;t get unknown-field errors.
+  , schemaDefault :: !(Maybe String) -- ^ "default" - Optional. Default value of the field. Per JSON Schema, this field is intended for documentation generators and doesn&#39;t affect validation. Thus it&#39;s included here and ignored so that developers who send schemas with a &#x60;default&#x60; field don&#39;t get unknown-field errors.
   , schemaMinimum :: !(Maybe Double) -- ^ "minimum" - Optional. SCHEMA FIELDS FOR TYPE INTEGER and NUMBER Minimum value of the Type.INTEGER and Type.NUMBER
   , schemaPattern :: !(Maybe Text) -- ^ "pattern" - Optional. Pattern of the Type.STRING to restrict a string to a regular expression.
   , schemaProperties :: !(Maybe (Map.Map String Schema)) -- ^ "properties" - Optional. Properties of Type.OBJECT.
@@ -4782,7 +4782,7 @@ mkSpeechConfig =
 -- The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details.  You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).
 data Status = Status
   { statusCode :: !(Maybe Int) -- ^ "code" - The status code, which should be an enum value of google.rpc.Code.
-  , statusDetails :: !(Maybe [(Map.Map String AnyType)]) -- ^ "details" - A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+  , statusDetails :: !(Maybe [(Map.Map String String)]) -- ^ "details" - A list of messages that carry the error details.  There is a common set of message types for APIs to use.
   , statusMessage :: !(Maybe Text) -- ^ "message" - A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the google.rpc.Status.details field, or localized by the client.
   } deriving (P.Show, P.Eq, P.Typeable)
 

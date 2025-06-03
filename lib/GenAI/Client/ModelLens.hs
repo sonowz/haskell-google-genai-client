@@ -909,7 +909,7 @@ fileDataFileUriL f FileData{..} = (\fileDataFileUri -> FileData { fileDataFileUr
 -- * FunctionCall
 
 -- | 'functionCallArgs' Lens
-functionCallArgsL :: Lens_' FunctionCall (Maybe (Map.Map String AnyType))
+functionCallArgsL :: Lens_' FunctionCall (Maybe (Map.Map String String))
 functionCallArgsL f FunctionCall{..} = (\functionCallArgs -> FunctionCall { functionCallArgs, ..} ) <$> f functionCallArgs
 {-# INLINE functionCallArgsL #-}
 
@@ -967,12 +967,12 @@ functionDeclarationResponseL f FunctionDeclaration{..} = (\functionDeclarationRe
 {-# INLINE functionDeclarationResponseL #-}
 
 -- | 'functionDeclarationResponseJsonSchema' Lens
-functionDeclarationResponseJsonSchemaL :: Lens_' FunctionDeclaration (Maybe AnyType)
+functionDeclarationResponseJsonSchemaL :: Lens_' FunctionDeclaration (Maybe String)
 functionDeclarationResponseJsonSchemaL f FunctionDeclaration{..} = (\functionDeclarationResponseJsonSchema -> FunctionDeclaration { functionDeclarationResponseJsonSchema, ..} ) <$> f functionDeclarationResponseJsonSchema
 {-# INLINE functionDeclarationResponseJsonSchemaL #-}
 
 -- | 'functionDeclarationParametersJsonSchema' Lens
-functionDeclarationParametersJsonSchemaL :: Lens_' FunctionDeclaration (Maybe AnyType)
+functionDeclarationParametersJsonSchemaL :: Lens_' FunctionDeclaration (Maybe String)
 functionDeclarationParametersJsonSchemaL f FunctionDeclaration{..} = (\functionDeclarationParametersJsonSchema -> FunctionDeclaration { functionDeclarationParametersJsonSchema, ..} ) <$> f functionDeclarationParametersJsonSchema
 {-# INLINE functionDeclarationParametersJsonSchemaL #-}
 
@@ -1001,7 +1001,7 @@ functionResponseNameL f FunctionResponse{..} = (\functionResponseName -> Functio
 {-# INLINE functionResponseNameL #-}
 
 -- | 'functionResponseResponse' Lens
-functionResponseResponseL :: Lens_' FunctionResponse ((Map.Map String AnyType))
+functionResponseResponseL :: Lens_' FunctionResponse ((Map.Map String String))
 functionResponseResponseL f FunctionResponse{..} = (\functionResponseResponse -> FunctionResponse { functionResponseResponse, ..} ) <$> f functionResponseResponse
 {-# INLINE functionResponseResponseL #-}
 
@@ -1320,7 +1320,7 @@ generationConfigSpeechConfigL f GenerationConfig{..} = (\generationConfigSpeechC
 {-# INLINE generationConfigSpeechConfigL #-}
 
 -- | 'generationConfigResponseJsonSchema' Lens
-generationConfigResponseJsonSchemaL :: Lens_' GenerationConfig (Maybe AnyType)
+generationConfigResponseJsonSchemaL :: Lens_' GenerationConfig (Maybe String)
 generationConfigResponseJsonSchemaL f GenerationConfig{..} = (\generationConfigResponseJsonSchema -> GenerationConfig { generationConfigResponseJsonSchema, ..} ) <$> f generationConfigResponseJsonSchema
 {-# INLINE generationConfigResponseJsonSchemaL #-}
 
@@ -1915,12 +1915,12 @@ operationErrorL f Operation{..} = (\operationError -> Operation { operationError
 {-# INLINE operationErrorL #-}
 
 -- | 'operationMetadata' Lens
-operationMetadataL :: Lens_' Operation (Maybe (Map.Map String AnyType))
+operationMetadataL :: Lens_' Operation (Maybe (Map.Map String String))
 operationMetadataL f Operation{..} = (\operationMetadata -> Operation { operationMetadata, ..} ) <$> f operationMetadata
 {-# INLINE operationMetadataL #-}
 
 -- | 'operationResponse' Lens
-operationResponseL :: Lens_' Operation (Maybe (Map.Map String AnyType))
+operationResponseL :: Lens_' Operation (Maybe (Map.Map String String))
 operationResponseL f Operation{..} = (\operationResponse -> Operation { operationResponse, ..} ) <$> f operationResponse
 {-# INLINE operationResponseL #-}
 
@@ -2045,12 +2045,12 @@ predictLongRunningOperationResponseL f PredictLongRunningOperation{..} = (\predi
 -- * PredictLongRunningRequest
 
 -- | 'predictLongRunningRequestParameters' Lens
-predictLongRunningRequestParametersL :: Lens_' PredictLongRunningRequest (Maybe AnyType)
+predictLongRunningRequestParametersL :: Lens_' PredictLongRunningRequest (Maybe String)
 predictLongRunningRequestParametersL f PredictLongRunningRequest{..} = (\predictLongRunningRequestParameters -> PredictLongRunningRequest { predictLongRunningRequestParameters, ..} ) <$> f predictLongRunningRequestParameters
 {-# INLINE predictLongRunningRequestParametersL #-}
 
 -- | 'predictLongRunningRequestInstances' Lens
-predictLongRunningRequestInstancesL :: Lens_' PredictLongRunningRequest ([AnyType])
+predictLongRunningRequestInstancesL :: Lens_' PredictLongRunningRequest ([String])
 predictLongRunningRequestInstancesL f PredictLongRunningRequest{..} = (\predictLongRunningRequestInstances -> PredictLongRunningRequest { predictLongRunningRequestInstances, ..} ) <$> f predictLongRunningRequestInstances
 {-# INLINE predictLongRunningRequestInstancesL #-}
 
@@ -2068,12 +2068,12 @@ predictLongRunningResponseGenerateVideoResponseL f PredictLongRunningResponse{..
 -- * PredictRequest
 
 -- | 'predictRequestInstances' Lens
-predictRequestInstancesL :: Lens_' PredictRequest ([AnyType])
+predictRequestInstancesL :: Lens_' PredictRequest ([String])
 predictRequestInstancesL f PredictRequest{..} = (\predictRequestInstances -> PredictRequest { predictRequestInstances, ..} ) <$> f predictRequestInstances
 {-# INLINE predictRequestInstancesL #-}
 
 -- | 'predictRequestParameters' Lens
-predictRequestParametersL :: Lens_' PredictRequest (Maybe AnyType)
+predictRequestParametersL :: Lens_' PredictRequest (Maybe String)
 predictRequestParametersL f PredictRequest{..} = (\predictRequestParameters -> PredictRequest { predictRequestParameters, ..} ) <$> f predictRequestParameters
 {-# INLINE predictRequestParametersL #-}
 
@@ -2082,7 +2082,7 @@ predictRequestParametersL f PredictRequest{..} = (\predictRequestParameters -> P
 -- * PredictResponse
 
 -- | 'predictResponsePredictions' Lens
-predictResponsePredictionsL :: Lens_' PredictResponse (Maybe [AnyType])
+predictResponsePredictionsL :: Lens_' PredictResponse (Maybe [String])
 predictResponsePredictionsL f PredictResponse{..} = (\predictResponsePredictions -> PredictResponse { predictResponsePredictions, ..} ) <$> f predictResponsePredictions
 {-# INLINE predictResponsePredictionsL #-}
 
@@ -2276,7 +2276,7 @@ schemaMaxItemsL f Schema{..} = (\schemaMaxItems -> Schema { schemaMaxItems, ..} 
 {-# INLINE schemaMaxItemsL #-}
 
 -- | 'schemaExample' Lens
-schemaExampleL :: Lens_' Schema (Maybe AnyType)
+schemaExampleL :: Lens_' Schema (Maybe String)
 schemaExampleL f Schema{..} = (\schemaExample -> Schema { schemaExample, ..} ) <$> f schemaExample
 {-# INLINE schemaExampleL #-}
 
@@ -2301,7 +2301,7 @@ schemaTypeL f Schema{..} = (\schemaType -> Schema { schemaType, ..} ) <$> f sche
 {-# INLINE schemaTypeL #-}
 
 -- | 'schemaDefault' Lens
-schemaDefaultL :: Lens_' Schema (Maybe AnyType)
+schemaDefaultL :: Lens_' Schema (Maybe String)
 schemaDefaultL f Schema{..} = (\schemaDefault -> Schema { schemaDefault, ..} ) <$> f schemaDefault
 {-# INLINE schemaDefaultL #-}
 
@@ -2464,7 +2464,7 @@ statusCodeL f Status{..} = (\statusCode -> Status { statusCode, ..} ) <$> f stat
 {-# INLINE statusCodeL #-}
 
 -- | 'statusDetails' Lens
-statusDetailsL :: Lens_' Status (Maybe [(Map.Map String AnyType)])
+statusDetailsL :: Lens_' Status (Maybe [(Map.Map String String)])
 statusDetailsL f Status{..} = (\statusDetails -> Status { statusDetails, ..} ) <$> f statusDetails
 {-# INLINE statusDetailsL #-}
 

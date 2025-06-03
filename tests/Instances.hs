@@ -603,7 +603,7 @@ instance Arbitrary FunctionCall where
 genFunctionCall :: Int -> Gen FunctionCall
 genFunctionCall n =
   FunctionCall
-    <$> arbitraryReducedMaybe n -- functionCallArgs :: Maybe (Map.Map String AnyType)
+    <$> arbitraryReducedMaybe n -- functionCallArgs :: Maybe (Map.Map String String)
     <*> arbitraryReducedMaybe n -- functionCallId :: Maybe Text
     <*> arbitrary -- functionCallName :: Text
   
@@ -627,8 +627,8 @@ genFunctionDeclaration n =
     <*> arbitraryReducedMaybe n -- functionDeclarationBehavior :: Maybe E'Behavior
     <*> arbitrary -- functionDeclarationDescription :: Text
     <*> arbitraryReducedMaybe n -- functionDeclarationResponse :: Maybe Schema
-    <*> arbitraryReducedMaybe n -- functionDeclarationResponseJsonSchema :: Maybe AnyType
-    <*> arbitraryReducedMaybe n -- functionDeclarationParametersJsonSchema :: Maybe AnyType
+    <*> arbitraryReducedMaybe n -- functionDeclarationResponseJsonSchema :: Maybe String
+    <*> arbitraryReducedMaybe n -- functionDeclarationParametersJsonSchema :: Maybe String
   
 instance Arbitrary FunctionResponse where
   arbitrary = sized genFunctionResponse
@@ -640,7 +640,7 @@ genFunctionResponse n =
     <*> arbitraryReducedMaybe n -- functionResponseId :: Maybe Text
     <*> arbitraryReducedMaybe n -- functionResponseWillContinue :: Maybe Bool
     <*> arbitrary -- functionResponseName :: Text
-    <*> arbitraryReduced n -- functionResponseResponse :: (Map.Map String AnyType)
+    <*> arbitrary -- functionResponseResponse :: (Map.Map String String)
   
 instance Arbitrary GenerateAnswerRequest where
   arbitrary = sized genGenerateAnswerRequest
@@ -772,7 +772,7 @@ genGenerationConfig n =
     <*> arbitraryReducedMaybe n -- generationConfigMediaResolution :: Maybe E'MediaResolution
     <*> arbitraryReducedMaybe n -- generationConfigStopSequences :: Maybe [Text]
     <*> arbitraryReducedMaybe n -- generationConfigSpeechConfig :: Maybe SpeechConfig
-    <*> arbitraryReducedMaybe n -- generationConfigResponseJsonSchema :: Maybe AnyType
+    <*> arbitraryReducedMaybe n -- generationConfigResponseJsonSchema :: Maybe String
     <*> arbitraryReducedMaybe n -- generationConfigPresencePenalty :: Maybe Float
     <*> arbitraryReducedMaybe n -- generationConfigTopP :: Maybe Float
     <*> arbitraryReducedMaybe n -- generationConfigTemperature :: Maybe Float
@@ -1087,8 +1087,8 @@ genOperation n =
     <$> arbitraryReducedMaybe n -- operationDone :: Maybe Bool
     <*> arbitraryReducedMaybe n -- operationName :: Maybe Text
     <*> arbitraryReducedMaybe n -- operationError :: Maybe Status
-    <*> arbitraryReducedMaybe n -- operationMetadata :: Maybe (Map.Map String AnyType)
-    <*> arbitraryReducedMaybe n -- operationResponse :: Maybe (Map.Map String AnyType)
+    <*> arbitraryReducedMaybe n -- operationMetadata :: Maybe (Map.Map String String)
+    <*> arbitraryReducedMaybe n -- operationResponse :: Maybe (Map.Map String String)
   
 instance Arbitrary Part where
   arbitrary = sized genPart
@@ -1144,8 +1144,8 @@ instance Arbitrary PredictLongRunningRequest where
 genPredictLongRunningRequest :: Int -> Gen PredictLongRunningRequest
 genPredictLongRunningRequest n =
   PredictLongRunningRequest
-    <$> arbitraryReducedMaybe n -- predictLongRunningRequestParameters :: Maybe AnyType
-    <*> arbitraryReduced n -- predictLongRunningRequestInstances :: [AnyType]
+    <$> arbitraryReducedMaybe n -- predictLongRunningRequestParameters :: Maybe String
+    <*> arbitrary -- predictLongRunningRequestInstances :: [String]
   
 instance Arbitrary PredictLongRunningResponse where
   arbitrary = sized genPredictLongRunningResponse
@@ -1161,8 +1161,8 @@ instance Arbitrary PredictRequest where
 genPredictRequest :: Int -> Gen PredictRequest
 genPredictRequest n =
   PredictRequest
-    <$> arbitraryReduced n -- predictRequestInstances :: [AnyType]
-    <*> arbitraryReducedMaybe n -- predictRequestParameters :: Maybe AnyType
+    <$> arbitrary -- predictRequestInstances :: [String]
+    <*> arbitraryReducedMaybe n -- predictRequestParameters :: Maybe String
   
 instance Arbitrary PredictResponse where
   arbitrary = sized genPredictResponse
@@ -1170,7 +1170,7 @@ instance Arbitrary PredictResponse where
 genPredictResponse :: Int -> Gen PredictResponse
 genPredictResponse n =
   PredictResponse
-    <$> arbitraryReducedMaybe n -- predictResponsePredictions :: Maybe [AnyType]
+    <$> arbitraryReducedMaybe n -- predictResponsePredictions :: Maybe [String]
   
 instance Arbitrary PromptFeedback where
   arbitrary = sized genPromptFeedback
@@ -1277,12 +1277,12 @@ genSchema n =
     <*> arbitraryReducedMaybe n -- schemaRequired :: Maybe [Text]
     <*> arbitraryReducedMaybe n -- schemaMinProperties :: Maybe Text
     <*> arbitraryReducedMaybe n -- schemaMaxItems :: Maybe Text
-    <*> arbitraryReducedMaybe n -- schemaExample :: Maybe AnyType
+    <*> arbitraryReducedMaybe n -- schemaExample :: Maybe String
     <*> arbitraryReducedMaybe n -- schemaTitle :: Maybe Text
     <*> arbitraryReducedMaybe n -- schemaMinItems :: Maybe Text
     <*> arbitraryReducedMaybe n -- schemaDescription :: Maybe Text
     <*> arbitraryReduced n -- schemaType :: ModelType
-    <*> arbitraryReducedMaybe n -- schemaDefault :: Maybe AnyType
+    <*> arbitraryReducedMaybe n -- schemaDefault :: Maybe String
     <*> arbitraryReducedMaybe n -- schemaMinimum :: Maybe Double
     <*> arbitraryReducedMaybe n -- schemaPattern :: Maybe Text
     <*> arbitraryReducedMaybe n -- schemaProperties :: Maybe (Map.Map String Schema)
@@ -1358,7 +1358,7 @@ genStatus :: Int -> Gen Status
 genStatus n =
   Status
     <$> arbitraryReducedMaybe n -- statusCode :: Maybe Int
-    <*> arbitraryReducedMaybe n -- statusDetails :: Maybe [(Map.Map String AnyType)]
+    <*> arbitraryReducedMaybe n -- statusDetails :: Maybe [(Map.Map String String)]
     <*> arbitraryReducedMaybe n -- statusMessage :: Maybe Text
   
 instance Arbitrary StringList where
