@@ -1,11 +1,13 @@
 cabal-version:      3.0
 name:               haskell-google-genai-client
 version:            0.1.0.0
-synopsis:           Auto-generated haskell-google-genai-client API Client
+synopsis:           Auto-generated Gemini API Client for Haskell
 description:
   Unofficial Haskell client for Google GenAI API, including Gemini.
   .
   This library is auto-generated from the OpenAPI specification, using <https://openapi-generator.tech/ openapi-generator>.
+  .
+  Google API reference: <https://ai.google.dev/api>
 
 category:           Web
 homepage:           https://github.com/sonowz/haskell-google-genai-client
